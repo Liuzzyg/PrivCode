@@ -1,0 +1,3 @@
+/u/fzv6en/anaconda3/envs/dpcode/lib/python3.11/site-packages/bitsandbytes/autograd/_functions.py:318: UserWarning: MatMul8bitLt: inputs will be cast from torch.float32 to float16 during quantization
+  warnings.warn(f"MatMul8bitLt: inputs will be cast from {A.dtype} to float16 during quantization")
+/u/fzv6en/anaconda3/envs/dpcode/lib/python3.11/site-packages/bitsandbytes/autograd/_functions.py:318: UserWarning: MatMul8bitLt: inputs will be cast from torch.bfloat16 to float16 during quantization
