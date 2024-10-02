@@ -3,7 +3,7 @@
 Design mostly based on Opacus and Private-transformers, and should work with 
 most libraries such as huggingface, timm, torchvision, etc.
 """
-
+import pdb
 import logging
 import math
 import types
@@ -17,6 +17,7 @@ from .accounting import accounting_manager
 from torch.functional import F
 import transformers
 from .supported_layers_grad_samplers import _supported_layers_norm_sample_AND_clipping
+from bitsandbytes.nn import Linear8bitLt
 
 
 class PrivacyEngine(object):
@@ -38,6 +39,7 @@ class PrivacyEngine(object):
         noise_multiplier: Optional[float] = None,
         target_epsilon: Optional[float] = None,
         target_delta: Optional[float] = None,
+        non_private: bool,
         alphas: Sequence[float] = accounting_manager.DEFAULT_ALPHAS,
         record_snr: bool = False,
         named_params: Optional[Sequence] = None,
@@ -133,6 +135,7 @@ class PrivacyEngine(object):
         self.effective_noise_multiplier = noise_multiplier / batch_size
         self.target_epsilon = target_epsilon
         self.target_delta = target_delta
+        self.non_private = non_private
         self.alphas = alphas
         self.eps_error = eps_error
         self.accounting_mode = accounting_mode
@@ -181,6 +184,12 @@ class PrivacyEngine(object):
         # store layer's name and create list of named layers for blockwise clipping
         self.named_layers=[]
         for name,layer in module.named_modules():
+            # pdb.set_trace()
+
+            # if isinstance(layer, Linear8bitLt):
+            #     layer.weight.initially_requires_grad = True
+            #     layer.bias.initially_requires_grad = True
+
             if _supported_and_trainable(layer):
                 self.named_layers.append((name,layer))
 
@@ -204,6 +213,7 @@ class PrivacyEngine(object):
             self.numerical_stability_constant=1e-6
         
         if clipping_style=='layer-wise':
+            # pdb.set_trace()
             self.max_grad_norm_layerwise = self.max_grad_norm / math.sqrt(self.n_layers)
         elif clipping_style=='param-wise':
             self.max_grad_norm_layerwise = self.max_grad_norm / math.sqrt(self.n_components)
@@ -218,7 +228,7 @@ class PrivacyEngine(object):
                 param.noise = self.noise_multiplier*self.max_grad_norm / num_GPUs
             else:
                 param.noise = self.noise_multiplier*self.max_grad_norm / math.sqrt(num_GPUs)
-
+        # pdb.set_trace()
         self.loss_reduction = loss_reduction
         self.clipping_mode = clipping_mode
         
@@ -245,6 +255,7 @@ class PrivacyEngine(object):
                 self.block_heads.append(self.named_layers[0][0])
             elif self.clipping_style in ['layer-wise','param-wise']:
                 self.block_heads = [name for (name,layer) in self.named_layers]
+                # pdb.set_trace()
         print(">>>>>>>>>>>>>>>>> Block heads for per-sample gradient clipping are defined as:", self.block_heads)
 
         transformers_support.forward_swapper(module=module)  # fix the position embeddings broadcast issue.
@@ -272,41 +283,47 @@ class PrivacyEngine(object):
 
 
         # ------ deepspeed ZERO 1 modification-----------
-        try:
-            from deepspeed.runtime.zero.stage_1_and_2 import DeepSpeedZeroOptimizer
-            from deepspeed import comm as dist
-    
-            def reduce_gradients_DP_stage_1(self, pipeline_parallel=False):
-                world_size = dist.get_world_size(self.dp_process_group)
-                my_rank = dist.get_rank(self.dp_process_group)
-    
-                # with PP we must create ipg buffer, since backward is handled outside zero
-                if pipeline_parallel and self.contiguous_gradients:
-                    self.ipg_buffer = []
-                    buf_0 = torch.empty(int(self.reduce_bucket_size),
-                                        dtype=self.dtype,
-                                        device=torch.cuda.current_device())
-                    self.ipg_buffer.append(buf_0)
-                    self.ipg_index = 0
-    
-                if not self.overlap_comm:
-                    for i, group in enumerate(self.bit16_groups):
-                        for param in group:
-                            if param.grad is not None:
-                                if hasattr(param,'private_grad'):
-                                    param.grad = torch.nan_to_num(param.private_grad).contiguous()#+torch.normal(mean=0, std=param.noise,size=param.size(), device=param.device, dtype=param.dtype)
-                                    del param.private_grad # release memory
-                                    param.grad = param.grad / param.batch_size * self.loss_scale # it works
-                                else:
-                                    param.grad.zero_()
-    
-                                self.reduce_ready_partitions_and_remove_grads(param, i)
-                # reduce any pending grads in either hook/non-hook case
-                self.overlapping_partition_gradients_reduce_epilogue()
-    
-            DeepSpeedZeroOptimizer.reduce_gradients = reduce_gradients_DP_stage_1
-        except:
-            pass
+        if not self.non_private:
+            # pdb.set_trace()
+            try:
+                from deepspeed.runtime.zero.stage_1_and_2 import DeepSpeedZeroOptimizer
+                from deepspeed import comm as dist
+        
+                def reduce_gradients_DP_stage_1(self, pipeline_parallel=False):
+                    world_size = dist.get_world_size(self.dp_process_group)
+                    my_rank = dist.get_rank(self.dp_process_group)
+        
+                    # with PP we must create ipg buffer, since backward is handled outside zero
+                    if pipeline_parallel and self.contiguous_gradients:
+                        self.ipg_buffer = []
+                        buf_0 = torch.empty(int(self.reduce_bucket_size),
+                                            dtype=self.dtype,
+                                            device=torch.cuda.current_device())
+                        self.ipg_buffer.append(buf_0)
+                        self.ipg_index = 0
+        
+                    if not self.overlap_comm:
+                        for i, group in enumerate(self.bit16_groups):
+                            for param in group:
+                                if param.grad is not None:
+                                    if hasattr(param,'private_grad'):
+                                        # pdb.set_trace()
+                                        param.grad = torch.nan_to_num(param.private_grad).contiguous() # + torch.normal(mean=0, std=param.noise,size=param.size(), device=param.device, dtype=param.dtype)
+                                        # pdb.set_trace()
+                                        del param.private_grad # release memory
+                                        param.grad = param.grad / param.batch_size * self.loss_scale # it works
+                                    else:
+                                        param.grad.zero_()
+                                    # pdb.set_trace()
+                                    self.reduce_ready_partitions_and_remove_grads(param, i)
+                                    # pdb.set_trace()
+                    # reduce any pending grads in either hook/non-hook case
+                    self.overlapping_partition_gradients_reduce_epilogue()
+                    # pdb.set_trace()
+        
+                DeepSpeedZeroOptimizer.reduce_gradients = reduce_gradients_DP_stage_1
+            except:
+                pass
 
     def lock(self):
         """Run this after noisy clipped gradient is created to prevent tampering with it before parameter update."""
@@ -370,13 +387,18 @@ class PrivacyEngine(object):
     def _create_noisy_clipped_gradient(self):
         """Create noisy clipped gradient for `optimizer.step`."""
         
+        # pdb.set_trace()
         unsupported_param_name=[]
+        supported_param_name=[]
         for name,param in list(self.named_params):#https://thispointer.com/python-remove-elements-from-a-list-while-iterating/#1
             if not hasattr(param, 'private_grad'):
                 unsupported_param_name.append(name)
                 self.named_params.remove((name,param)) # very helpful for models that are not 100% supported, e.g. in timm
-        if unsupported_param_name!=[]:
-            print(unsupported_param_name, 'are not supported by privacy engine; these parameters are not requiring gradient nor updated.')
+            else:
+                supported_param_name.append(name)
+        # print(supported_param_name, 'are supported by privacy engine')
+        # if unsupported_param_name!=[]:
+        #     print(unsupported_param_name, 'are not supported by privacy engine; these parameters are not requiring gradient nor updated.')
                 
         signals, noises = [], []
         

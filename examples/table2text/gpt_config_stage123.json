@@ -1,9 +1,9 @@
 {
   "bf16": {
-      "enabled": true
+      "enabled": false
     },
   "fp16": {
-      "enabled": false,
+      "enabled": true,
       "fp16_master_weights_and_grads": false,
       "loss_scale": 1,
       "loss_scale_window": 1000,

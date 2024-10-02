@@ -21,10 +21,12 @@ and from Private-vision v0.1.0 (https://github.com/woodyx218/private_vision)
 """
 
 import torch
+import pdb
 import transformers.pytorch_utils
 from torch import nn
 from torch.functional import F
 from transformers.models.t5.modeling_t5 import T5LayerNorm
+from bitsandbytes.nn import Linear8bitLt
 
 
 def mixed_ghost_norm(layer,A,B,conv=False):
@@ -122,6 +124,41 @@ def _compute_linear_grad_sample(layer: nn.Linear, A: torch.Tensor, B: torch.Tens
         elif B.dim() == 2:
             grad_bias = B
         layer.bias.grad_sample = grad_bias.detach()     
+
+
+def _compute_linear8bitlt_grad_sample(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, clipping_mode: str) -> None:
+    """Computes per sample gradients for `Linear8bitLt` layer.
+    A is activations or layer's input; B is output gradient.
+    """
+    if isinstance(layer, Linear8bitLt):
+        if A is not None:
+            if clipping_mode in ['MixGhostClip', 'MixOpt']:
+                mixed_ghost_norm(layer, A, B)
+            else:
+                layer.use_gc = True
+
+            if A.dim() > 3:
+                A = torch.flatten(A, start_dim=1, end_dim=-2)
+                B = torch.flatten(B, start_dim=1, end_dim=-2)
+
+            if layer.use_gc:
+                # Compute weight gradient norm
+                layer.weight.norm_sample = _light_linear_weight_norm_sample(A, B)
+            else:
+                # Compute gradient sample using einsum
+                layer.weight.grad_sample = torch.einsum('b...d, b...p->bpd', A, B).detach()
+                layer.weight.norm_sample = torch.sqrt(torch.sum(layer.weight.grad_sample**2, dim=(1, 2)))
+                if clipping_mode != 'MixOpt':
+                    del layer.weight.grad_sample
+
+        # Compute bias gradient norm
+        if layer.bias is not None:
+            layer.bias.norm_sample = _light_linear_bias_norm_sample(B)
+            if B.dim() == 3:
+                grad_bias = B.sum(dim=1)
+            elif B.dim() == 2:
+                grad_bias = B
+            layer.bias.grad_sample = grad_bias.detach()
 
 
 def _compute_Conv1D_grad_sample(layer: nn.Linear, A: torch.Tensor, B: torch.Tensor, clipping_mode: str) -> None:
@@ -222,6 +259,7 @@ def _compute_embedding_grad_sample(layer: nn.Embedding, A: torch.Tensor, B: torc
 
     #--- compute gradient norm
     not_AAt: torch.Tensor = ~A[:, :, None].eq(A[:, None, :])
+    # pdb.set_trace()
     # Clear the contribution to the norm of the gradient for the padding token.
     #   In vanilla backpropagation, this particular embedding doesn't contribute to the gradient anyway.
     #   For more see 1.10.0 doc: https://pytorch.org/docs/stable/generated/torch.nn.Embedding.html
@@ -297,10 +335,31 @@ def _compute_t5_layer_norm_grad_sample(layer: T5LayerNorm, A: torch.Tensor, B: t
 def _clip_linear_grad(layer: nn.Linear, A: torch.Tensor, B: torch.Tensor, C) -> None:
     try:
         grad_weight = torch.einsum('b...,b->...',layer.weight.grad_sample,C)
+        # print('there is grad_sample')
         del layer.weight.grad_sample
     except:
         grad_weight = torch.einsum('b...d,b...p->pd',A,B)
+        # print('there is no grad_sample')
+    
+    # pdb.set_trace()
     return grad_weight
+
+def _clip_linear8bitlt_grad(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, C) -> None:
+    """Clips the gradient for `Linear8bitLt` layer."""
+    if isinstance(layer, Linear8bitLt):
+        A = A.to(torch.float32)
+        B = B.to(torch.float32)
+        C = C.to(torch.float32)
+
+        try:
+            grad_weight = torch.einsum('b...,b->...', layer.weight.grad_sample, C)
+            del layer.weight.grad_sample
+        except:
+            grad_weight = torch.einsum('b...d, b...p->pd', A, B)
+
+        grad_weight = grad_weight.to(torch.float16)
+
+        return grad_weight
 
 def _clip_normalization_grad(layer, A: torch.Tensor, B: torch.Tensor, C) -> None:
     grad_weight = torch.einsum('b...,b->...',layer.weight.grad_sample,C)
@@ -363,15 +422,16 @@ def _clip_t5_layer_norm_grad(layer: T5LayerNorm, A: torch.Tensor, B: torch.Tenso
 _supported_layers_norm_sample_AND_clipping = {
     nn.Embedding: (_compute_embedding_grad_sample, _clip_embedding_grad),
     nn.Linear: (_compute_linear_grad_sample, _clip_linear_grad),
-    nn.Conv1d: (_compute_conv_grad_sample, _clip_conv_grad),
-    nn.Conv2d: (_compute_conv_grad_sample, _clip_conv_grad),
-    nn.LayerNorm: (_compute_layer_norm_grad_sample, _clip_normalization_grad),
-    nn.GroupNorm: (_compute_group_norm_grad_sample, _clip_normalization_grad),
-    nn.InstanceNorm1d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
-    nn.InstanceNorm2d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
-    nn.InstanceNorm3d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
-    transformers.pytorch_utils.Conv1D: (_compute_Conv1D_grad_sample, _clip_Conv1D_grad),# Conv1D's weight is transposed to nn.Linear's, but this does not matter for the norm
-    transformers.models.t5.modeling_t5.T5LayerNorm: (_compute_t5_layer_norm_grad_sample, _clip_t5_layer_norm_grad),
+    # # Linear8bitLt: (_compute_linear8bitlt_grad_sample, _clip_linear8bitlt_grad),
+    # nn.Conv1d: (_compute_conv_grad_sample, _clip_conv_grad),
+    # nn.Conv2d: (_compute_conv_grad_sample, _clip_conv_grad),
+    # nn.LayerNorm: (_compute_layer_norm_grad_sample, _clip_normalization_grad),
+    # nn.GroupNorm: (_compute_group_norm_grad_sample, _clip_normalization_grad),
+    # nn.InstanceNorm1d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
+    # nn.InstanceNorm2d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
+    # nn.InstanceNorm3d: (_compute_instance_norm_grad_sample, _clip_normalization_grad),
+    # transformers.pytorch_utils.Conv1D: (_compute_Conv1D_grad_sample, _clip_Conv1D_grad),# Conv1D's weight is transposed to nn.Linear's, but this does not matter for the norm
+    # transformers.models.t5.modeling_t5.T5LayerNorm: (_compute_t5_layer_norm_grad_sample, _clip_t5_layer_norm_grad),
 }
 
 #%  we need a new attribute param.private_grad to avoid contamination from non-private .grad
@@ -381,6 +441,8 @@ def _create_or_extend_private_grad(param: torch.Tensor, summed_clipped_grad: tor
     """Adds summed clipped gradient (not per-sample) to param.private_grad or accumulate the existing tensor."""
 
     assert summed_clipped_grad.shape == param.shape, f"summed clipped grad.size()={summed_clipped_grad.size()}, param.size()={param.size()}"
+    # print(f"summed clipped grad.size()={summed_clipped_grad.size()}, param.size()={param.size()}")
+    # pdb.set_trace()
     if hasattr(param, "private_grad"):
       if accumulate_private_grad == True:
         param.private_grad += summed_clipped_grad.detach()
@@ -388,3 +450,5 @@ def _create_or_extend_private_grad(param: torch.Tensor, summed_clipped_grad: tor
         param.private_grad = summed_clipped_grad.detach()
     else:
         param.private_grad = summed_clipped_grad.detach()+torch.normal(mean=0, std=param.noise,size=param.size(), device=param.device, dtype=param.dtype)
+        # print(param.private_grad)
+    # pdb.set_trace()

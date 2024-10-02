@@ -1,0 +1,491 @@
+import argparse
+import os
+import json
+import torch
+import pdb
+import pandas as pd
+from accelerate import Accelerator
+from datasets import load_dataset, load_from_disk, Features, Value
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training , set_peft_model_state_dict
+import torch.distributed
+from torch.utils.data import IterableDataset
+from tqdm import tqdm
+from transformers import AutoConfig, AutoModelForCausalLM, AutoTokenizer, TrainingArguments, logging, set_seed
+# from transformers import Trainer, TrainingArguments
+from transformers import TrainerCallback, TrainerState, TrainerControl
+from transformers.optimization import get_linear_schedule_with_warmup
+from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
+
+from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
+
+from trainer_deepspeed import Trainer
+from compiled_args import (PrivacyArguments, TrainingArguments)
+from deepspeed.ops.adam import DeepSpeedCPUAdam
+from sklearn.model_selection import train_test_split
+
+"""
+Fine-Tune StarCoder on Code Alpaca/SE
+"""
+
+
+class SavePeftModelCallback(TrainerCallback):
+    def on_save(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        **kwargs,
+    ):
+        checkpoint_folder = os.path.join(args.output_dir, f"{PREFIX_CHECKPOINT_DIR}-{state.global_step}")
+
+        kwargs["model"].save_pretrained(checkpoint_folder)
+
+        pytorch_model_path = os.path.join(checkpoint_folder, "pytorch_model.bin")
+        torch.save({}, pytorch_model_path)
+        return control
+
+
+class LoadBestPeftModelCallback(TrainerCallback):
+    def on_train_end(
+        self,
+        args: TrainingArguments,
+        state: TrainerState,
+        control: TrainerControl,
+        **kwargs,
+    ):
+        print(f"Loading best peft model from {state.best_model_checkpoint} (score: {state.best_metric}).")
+        best_model_path = os.path.join(state.best_model_checkpoint, "adapter_model.bin")
+        adapters_weights = torch.load(best_model_path)
+        model = kwargs["model"]
+        set_peft_model_state_dict(model, adapters_weights)
+        return control
+    
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    # parser.add_argument("--model_path", type=str, default="microsoft/Phi-3.5-mini-instruct")
+    # parser.add_argument("--model_path", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct")
+    # parser.add_argument("--model_path", type=str, default="Qwen/CodeQwen1.5-7B")
+    parser.add_argument("--model_path", type=str, default="bigcode/starcoder2-3b")
+    # parser.add_argument("--dataset_name", type=str, default="bigcode/starcoderdata")
+    parser.add_argument("--dataset_name", type=str, default="ise-uiuc/Magicoder-Evol-Instruct-110K")
+    # parser.add_argument("--dataset_name", type=str, default="data/starcoderdata_numpy_subset25k.jsonl")
+    # parser.add_argument("--subset", type=str, default="python")
+    parser.add_argument("--subset", type=str)
+    parser.add_argument("--split", type=str, default="train")
+    parser.add_argument("--size_valid_set", type=int, default=1000)
+    parser.add_argument("--streaming", action="store_true")
+    parser.add_argument("--shuffle_buffer", type=int, default=5000)
+
+    # # alpaca
+    parser.add_argument("--input_column_name", type=str, default="instruction")
+    parser.add_argument("--output_column_name", type=str, default="response")
+    # starcoderdata
+    parser.add_argument("--column_name", type=str, default="content")
+
+    parser.add_argument("--seq_length", type=int, default=1024)
+    parser.add_argument("--max_steps", type=int, default=0)
+    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--batch_size", type=int, default=8)
+    parser.add_argument("--gradient_accumulation_steps", type=int, default=16)
+
+    parser.add_argument("--lora_r", type=int, default=16)
+    parser.add_argument("--lora_alpha", type=int, default=32)
+    parser.add_argument("--lora_dropout", type=float, default=0.05)
+
+    parser.add_argument("--learning_rate", type=float, default=5e-6)
+    parser.add_argument("--lr_scheduler_type", type=str, default="cosine")
+    parser.add_argument("--num_warmup_steps", type=int, default=100)
+    parser.add_argument("--weight_decay", type=float, default=0.05)
+
+    parser.add_argument("--deepspeed_config", type=str, default=None)
+    parser.add_argument("--multi_gpus", action="store_true")
+    parser.add_argument("--local_rank", type=int, default=0)
+    parser.add_argument("--no_fp16", action="store_false")
+    parser.add_argument("--bf16", action="store_true")
+    parser.add_argument("--no_gradient_checkpointing", action="store_false", default=False)
+    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--num_workers", type=int, default=None)
+    # parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/starcoderdata_numpy/starcoder2-3b/dp1e-10")
+    parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/magicoder/starcoder2-3b/dp1e-10")
+    parser.add_argument("--log_freq", default=100, type=int)
+    parser.add_argument("--eval_freq", default=100, type=int)
+    parser.add_argument("--save_freq", default=1000, type=int)
+    parser.add_argument("--save_freq_epoch", default=1, type=int)
+
+    # DP
+    parser.add_argument("--per_example_max_grad_norm", type=float, default=0.1)  #1e-10
+    parser.add_argument("--target_epsilon", type=float, default=1e-10)   # 1e-10
+    parser.add_argument("--target_delta", type=float, default=1e-5)
+    parser.add_argument("--non_private", type=str, default='no')
+    # parser.add_argument("--non_private", type=str, default='y')
+    parser.add_argument("--clipping_mode", type=str, default='ghost')
+
+    return parser.parse_args()
+
+
+def chars_token_ratio(dataset, tokenizer, input_column_name="prompt", output_column_name="completion", nb_examples=400): # alpaca, nb_examples=400):
+    """
+    Estimate the average number of characters per token in the dataset.
+    """
+    total_characters, total_tokens = 0, 0
+    for _, example in tqdm(zip(range(nb_examples), iter(dataset)), total=nb_examples):
+        text = prepare_sample_text(example, input_column_name, output_column_name)
+        total_characters += len(text)
+        if tokenizer.is_fast:
+            total_tokens += len(tokenizer(text).tokens())
+        else:
+            total_tokens += len(tokenizer.tokenize(text))
+
+    return total_characters / total_tokens
+
+
+# def chars_token_ratio(dataset, tokenizer, column_name='content', nb_examples=400):    #input_column_name="prompt", output_column_name="completion", nb_examples=400): # alpaca
+#     """
+#     Estimate the average number of characters per token in the dataset.
+#     """
+#     total_characters, total_tokens = 0, 0
+#     for _, example in tqdm(zip(range(nb_examples), iter(dataset)), total=nb_examples):
+#         text = prepare_sample_text(example, column_name)
+#         total_characters += len(text)
+#         if tokenizer.is_fast:
+#             total_tokens += len(tokenizer(text).tokens())
+#         else:
+#             total_tokens += len(tokenizer.tokenize(text))
+
+#     return total_characters / total_tokens
+
+
+def print_trainable_parameters(model):
+    """
+    Prints the number of trainable parameters in the model.
+    """
+    trainable_params = 0
+    all_param = 0
+    for _, param in model.named_parameters():
+        all_param += param.numel()
+        if param.requires_grad:
+            trainable_params += param.numel()
+    print(
+        f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
+    )
+
+# alpaca
+def prepare_sample_text(examples, input_column_name="prompt", output_column_name="completion"):
+    """Prepare the text from a sample of the dataset."""
+    texts = []
+    for prompt, completion in zip(examples[input_column_name], examples[output_column_name]):
+        # pdb.set_trace()
+        text = f"Question: {prompt}\n\nAnswer: {completion}"
+        texts.append(text)
+    return texts
+
+# # starcoderdata
+# def prepare_sample_text(example, column_name="content"):  # input_column_name="prompt", output_column_name="completion"): # alpaca
+#     """Prepare the text from a sample of the dataset."""
+#     text = example[column_name]
+#     return text
+
+
+def create_datasets(tokenizer, args):
+    if args.streaming:
+        dataset = load_dataset(
+            args.dataset_name,
+            data_dir=args.subset,
+            split=args.split,
+            use_auth_token=True,
+            num_proc=args.num_workers if not args.streaming else None,
+            streaming=args.streaming,
+        )
+
+        print("Loading the dataset in streaming mode")
+        valid_data = dataset.take(args.size_valid_set)
+        train_data = dataset.skip(args.size_valid_set)
+        train_data = train_data.shuffle(buffer_size=args.shuffle_buffer, seed=args.seed)
+    else:
+        # magicoder data
+        dataset = load_dataset(
+            args.dataset_name,
+            data_dir=args.subset,
+            split=args.split,
+            use_auth_token=True,
+            num_proc=args.num_workers if not args.streaming else None,
+            streaming=args.streaming,
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+        )
+
+        # pdb.set_trace()
+        dataset = dataset.train_test_split(test_size=0.8, seed=42)
+        
+        train_data = dataset['train']
+        valid_data = dataset['test']
+
+        # # starcoderdata
+        # features = Features({
+        #     "content": Value(dtype="string")
+        # })
+
+        # dataset = load_dataset(
+        #     "json", 
+        #     data_files=args.dataset_name,
+        #     split=args.split,
+        #     features=features
+        # )
+        
+        # dataset = dataset.train_test_split(test_size=0.1, seed=42)
+        # train_data = dataset['train']
+        # valid_data = dataset['test']
+
+        print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
+        # pdb.set_trace()
+
+    # chars_per_token = chars_token_ratio(train_data, tokenizer, args.input_column_name, args.output_column_name)#args.column_name)    # args.input_column_name, args.output_column_name) # alpaca 
+    # print(f"The character to token ratio of the dataset is: {chars_per_token:.2f}")
+
+    # train_dataset = ConstantLengthDataset(
+    #     tokenizer,
+    #     train_data,
+    #     infinite=True,
+    #     seq_length=args.seq_length,
+    #     chars_per_token=chars_per_token,
+    #     input_column_name=args.input_column_name,
+    #     output_column_name=args.output_column_name
+    # )
+    # valid_dataset = ConstantLengthDataset(
+    #     tokenizer,
+    #     valid_data,
+    #     infinite=False,
+    #     seq_length=args.seq_length,
+    #     chars_per_token=chars_per_token,
+    #     input_column_name=args.input_column_name,
+    #     output_column_name=args.output_column_name
+    # )
+
+    def preprocess_function(examples):
+        buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
+        
+        tokenized_inputs = tokenizer(buffer, truncation=False)
+        
+        result = {
+            "input_ids": [],
+            "labels": [],
+            "attention_mask": []
+        }
+
+        pad_token_id = tokenizer.eos_token_id
+
+        for input_ids in tokenized_inputs["input_ids"]:
+            input_ids += [tokenizer.eos_token_id]
+            
+            attention_mask = [1] * len(input_ids)
+            # pdb.set_trace()
+            
+            for i in range(0, len(input_ids), args.seq_length):
+                seq = input_ids[i : i + args.seq_length]
+                mask = attention_mask[i : i + args.seq_length]
+
+                if len(seq) < args.seq_length:
+                    mask += [0] * (args.seq_length - len(seq))
+                    seq += [pad_token_id] * (args.seq_length - len(seq))
+                
+                result["input_ids"].append(seq)
+                result["labels"].append(seq)
+                result["attention_mask"].append(mask)
+
+        return result
+
+    train_dataset = train_data.map(
+        preprocess_function,
+        batched=True,
+        remove_columns=train_data.column_names,
+        num_proc=args.num_workers
+    )
+
+    valid_dataset = valid_data.map(
+        preprocess_function,
+        batched=True,
+        remove_columns=valid_data.column_names,
+        num_proc=args.num_workers
+    )
+
+    # pdb.set_trace()
+    return train_dataset, valid_dataset, len(train_data)
+
+
+def run_training(args, tokenizer, train_data, val_data, total_train_data_length):
+    print("Loading the model")
+    # disable caching mechanism when using gradient checkpointing
+    model = AutoModelForCausalLM.from_pretrained(
+        args.model_path,
+        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+        use_auth_token=True,
+        use_cache=not args.no_gradient_checkpointing,
+        load_in_8bit=True,
+        # device_map="auto",
+        device_map={"": Accelerator().process_index},
+        # device_map={'':torch.cuda.current_device()}
+    )
+    print(type(model))
+    
+    model = prepare_model_for_kbit_training(model)
+    print(type(model))
+    # pdb.set_trace()
+    lora_config = LoraConfig(
+        r=args.lora_r,
+        lora_alpha=args.lora_alpha,
+        lora_dropout=args.lora_dropout,
+        bias="none",
+        task_type="CAUSAL_LM",
+        # target_modules = ["c_proj", "c_attn", "q_attn"]  # starcoder
+        target_modules = [
+            "self_attn.q_proj", 
+            "self_attn.k_proj", 
+            "self_attn.v_proj", 
+            "self_attn.o_proj",
+            # "mlp.gate_proj", 
+            # "mlp.up_proj", 
+            # "mlp.down_proj"
+        ]  # codeqwen  deepseek-coder  starcoder
+        # target_modules = ["qkv_proj"]   # Phi-3.5-mini
+    )
+
+    model = get_peft_model(model, lora_config)
+    print(type(model))
+
+    print_trainable_parameters(model)
+
+    train_data.start_iteration = 0
+    # accelerator = Accelerator()
+    num_GPUs = torch.cuda.device_count()
+    print(f"Number of GPUs available: {torch.cuda.device_count()}")
+    print(f"Number of GPUs available: {num_GPUs}")
+
+    # train_data = accelerator.prepare(train_data)
+    # val_data = accelerator.prepare(val_data)
+    # model = accelerator.prepare(model)
+
+    print("Starting main loop")
+
+    training_args = TrainingArguments(
+        output_dir=args.output_dir,
+        dataloader_drop_last=True,
+        evaluation_strategy="steps",
+        evaluate_before_training='no',
+        save_strategy="steps",
+        load_best_model_at_end=True,
+        max_steps=args.max_steps,
+        eval_steps=args.eval_freq,
+        num_train_epochs=args.epochs,
+        save_steps=args.save_freq,
+        save_epochs=args.save_freq_epoch,
+        logging_steps=args.log_freq,
+        per_device_train_batch_size=args.batch_size,
+        per_device_eval_batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
+        lr_scheduler_type=args.lr_scheduler_type,
+        warmup_steps=args.num_warmup_steps,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        gradient_checkpointing=not args.no_gradient_checkpointing,
+        fp16=not args.no_fp16,
+        bf16=args.bf16,
+        weight_decay=args.weight_decay,
+        run_name="StarCoder-finetuned",
+        report_to="wandb",
+        ddp_find_unused_parameters=False,
+        disable_tqdm=False,
+        deepspeed_config=args.deepspeed_config
+    )
+
+    privacy_args = PrivacyArguments(
+        per_example_max_grad_norm=args.per_example_max_grad_norm,
+        target_epsilon=args.target_epsilon,
+        target_delta=args.target_delta,
+        non_private=args.non_private,
+        clipping_mode=args.clipping_mode 
+    )
+    
+    # if not args.multi_gpus:
+    #     torch.distributed.init_process_group(backend='nccl')
+
+    # Hacky way to set noise_multiplier.
+    privacy_engine = PrivacyEngine(
+        module=model,
+        batch_size=training_args.train_batch_size,
+        sample_size=total_train_data_length,
+        epochs=training_args.num_train_epochs,
+        max_grad_norm=privacy_args.per_example_max_grad_norm,
+        noise_multiplier=privacy_args.noise_multiplier,
+        target_epsilon=privacy_args.target_epsilon,
+        target_delta=privacy_args.target_delta,
+        non_private=privacy_args.non_private,
+        accounting_mode=privacy_args.accounting_mode,
+        clipping_mode=privacy_args.clipping_mode,
+        clipping_fn=privacy_args.clipping_fn,
+        # clipping_style='layer-wise',
+        # clipping_style=privacy_args.clipping_style,
+        # origin_params=origin_params,
+        num_GPUs=num_GPUs,
+        torch_seed_is_fixed=True,
+    )
+
+    # Originally, these could have been null.
+    privacy_args.noise_multiplier = privacy_engine.noise_multiplier
+    privacy_args.target_delta = privacy_engine.target_delta
+
+    # trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback])
+    trainer = Trainer(
+        model=model, 
+        # tokenizer=tokenizer, 
+        args=training_args, 
+        privacy_args=privacy_args,
+        train_dataset=train_data, 
+        eval_dataset=val_data
+        )
+
+
+    # Initialize the optimizer
+    params = model.parameters()
+
+    # if not training_args.deepspeed_config:
+    optimizer = torch.optim.AdamW(
+        params=params,
+        lr=training_args.learning_rate,
+        betas=(training_args.adam_beta1, training_args.adam_beta2),
+        eps=training_args.adam_epsilon,
+    )
+    trainer.optimizer = optimizer
+
+    print('privacy_args: ')
+    print(json.dumps(privacy_args.__dict__, indent=4))
+    if not training_args.deepspeed_config:
+        privacy_engine.attach(optimizer)
+
+    print("Training...")
+    trainer.train()
+
+    print("Saving last checkpoint of the model")
+    model.save_pretrained(os.path.join(args.output_dir, "final_checkpoint/"))
+
+
+def main(args):
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path)
+    train_dataset, eval_dataset, total_train_data_length = create_datasets(tokenizer, args)
+    run_training(args, tokenizer, train_dataset, eval_dataset, total_train_data_length)
+
+
+if __name__ == "__main__":
+    args = get_args()
+
+    set_seed(args.seed)
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    logging.set_verbosity_error()
+
+    # if not args.multi_gpus:
+    #     os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2"
+    #     os.environ['RANK'] = '0'
+    #     os.environ['WORLD_SIZE'] = '1'
+    #     os.environ['MASTER_ADDR'] = 'localhost'
+        # os.environ['MASTER_PORT'] = '12359'
+
+    main(args)

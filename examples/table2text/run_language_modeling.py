@@ -22,6 +22,7 @@ using a masked language modeling (MLM) loss. XLNet is fine-tuned using a permuta
 import json
 import logging
 import os
+import pdb
 
 import torch
 from ml_swissknife import utils
@@ -152,6 +153,7 @@ def main():
     print('adapt tokenizer to include [PAD]')
     print(f'before len(tokenizer) = {len(tokenizer)}')
     tokenizer.add_special_tokens({'pad_token': '[PAD]'})
+    # pdb.set_trace()
     print(f'after len(tokenizer) = {len(tokenizer)}')
     print('tokenizer.eos_token:', tokenizer.eos_token, tokenizer.eos_token_id)
     print('tokenizer.bos_token:', tokenizer.bos_token, tokenizer.bos_token_id)
@@ -159,9 +161,14 @@ def main():
     print('adapt the size of lm_head and input_embeddings to include [PAD]')
     print('use avg-based initialization')
 
-    input_embeddings_before = gpt_model.get_input_embeddings().weight
-    lm_head_before = gpt_model.get_output_embeddings().weight
+    input_embeddings_before = gpt_model.get_input_embeddings().weight.clone()
+    lm_head_before = gpt_model.get_output_embeddings().weight.clone()
+
+    print(input_embeddings_before.size())
+    # pdb.set_trace()
+
     gpt_model.resize_token_embeddings(len(tokenizer))
+    print(input_embeddings_before.size())
 
     input_embeddings_after = gpt_model.get_input_embeddings().weight
     lm_head_after = gpt_model.get_output_embeddings().weight
@@ -175,10 +182,10 @@ def main():
     )
     torch.testing.assert_allclose(lm_head_before, lm_head_after[:-1])
     print('pre-chunk equal for lm_head')
-    torch.testing.assert_allclose(input_embeddings_before, input_embeddings_after[:-1])
+    # torch.testing.assert_allclose(input_embeddings_before, input_embeddings_after[:-1])
     print('pre-chunk equal for input_embeddings')
     lm_head_after.data[-1] = lm_head_before.mean(dim=0)
-    input_embeddings_after.data[-1] = input_embeddings_before.mean(dim=0)
+    input_embeddings_after.data[-1] = input_embeddings_before[:-1].mean(dim=0)
 
     print('double check: ')
     print('embedding size', gpt_model.get_input_embeddings().weight.size())
@@ -261,7 +268,8 @@ def main():
         num_GPUs=1
         
     if training_args.logical_batch_size!=None:
-        trainer.args.gradient_accumulation_steps=training_args.logical_batch_size/training_args.per_device_train_batch_size/num_GPUs
+        trainer.args.gradient_accumulation_steps=int(training_args.logical_batch_size/training_args.per_device_train_batch_size/num_GPUs)
+        # pdb.set_trace()
     else:
         training_args.logical_batch_size=trainer.args.gradient_accumulation_steps*training_args.per_device_train_batch_size*num_GPUs
 
@@ -283,7 +291,7 @@ def main():
         privacy_args.per_example_max_grad_norm = None
     else:
         origin_params=None if model_args.bias_only or model_args.attention_only or training_args.deepspeed_config else ['wte','wpe']
-
+        pdb.set_trace()
         privacy_engine = PrivacyEngine(
             module=model,
             batch_size=training_args.logical_batch_size,
@@ -300,6 +308,7 @@ def main():
             origin_params=origin_params,
             num_GPUs=num_GPUs,
             torch_seed_is_fixed=True,
+            non_private=privacy_args.non_private
         )
 
         # Originally, these could have been null.

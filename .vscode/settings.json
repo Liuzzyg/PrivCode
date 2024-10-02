@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./examples/codegen/human-eval"
+    ]
+}
