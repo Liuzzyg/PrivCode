@@ -1,0 +1,11 @@
+Please gain inspiration from the following random code snippet related to the Numpy API to create a high-quality and simple programming problem. We need that the created programming problem only uses numpy api, and don't use any other libraries. Present your output in two distinct sections: [Problem Description]: and [Solution]:, and each section end up with [END].
+
+Code snippet for inspiration:
+{code}
+Guidelines for each section:
+
+1. [Problem Description]: This should be **completely self-contained**, providing all the contextual information one needs to understand and solve the problem. Assume common programming knowledge, but ensure that any specific context, variables, or code snippets pertinent to this problem are explicitly included.
+
+2. [Solution]: Offer a comprehensive, **correct** solution that accurately addresses the [Problem Description] you provided, and use **only the NumPy api**.
+
+You only need to give your output with above two sections, with the format:[Problem Description]:\n[content][END]\n[Solution]:\n[content][END]

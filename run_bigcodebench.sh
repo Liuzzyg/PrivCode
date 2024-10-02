@@ -1,0 +1,43 @@
+export CUDA_VISIBLE_DEVICES=1
+
+MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
+
+STEPS=130
+BATCH_SIZE=2
+TARGET_EPSILON=10
+
+
+
+# evaluate model finetuned on private syndata
+CHECKPOINT="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/${MODEL_NAME}/dp${TARGET_EPSILON}_syndata_merged/checkpoint-${STEPS}"
+SAVE_ROOT_PATH="generate/bigcodebench/magicoder/dp${TARGET_EPSILON}_syndata"
+
+bigcodebench.generate \
+    --model $CHECKPOINT \
+    --model_name $MODEL_NAME \
+    --split instruct \
+    --subset full \
+    --greedy \
+    --bs $BATCH_SIZE \
+    --resume \
+    --backend vllm \
+    --save_root_path $SAVE_ROOT_PATH \
+    --step $STEPS \
+
+
+
+# # evaluate model finetuned on original data
+# CHECKPOINT="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/${MODEL_NAME}/original_data_merged/checkpoint-${STEPS}"
+# SAVE_ROOT_PATH="generate/bigcodebench/magicoder/original_data"
+
+# bigcodebench.generate \
+#     --model $CHECKPOINT \
+#     --split instruct \
+#     --subset full \
+#     --greedy \
+#     --bs $BATCH_SIZE \
+#     --resume \
+#     --backend vllm \
+#     --save_root_path $SAVE_ROOT_PATH \
+#     --step $STEPS \

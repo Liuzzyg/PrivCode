@@ -5,7 +5,7 @@ which are licensed under Apache License 2.0.
 
 We have modified it considerably to support book-keeping and BiTFiT.
 """
-
+import pdb
 from typing import Tuple
 
 import torch
@@ -47,7 +47,9 @@ def add_hooks(model: nn.Module, loss_reduction='mean', clipping_mode='MixOpt',bi
 
     handles = []
 
+
     for name, layer in model.named_modules():
+        # pdb.set_trace()
         if type(layer) in _supported_layers_norm_sample_AND_clipping and requires_grad(layer):
             if hasattr(layer.weight,'initially_requires_grad') and layer.weight.initially_requires_grad:
                 #print('Attaching forward hook on', name)
@@ -124,6 +126,8 @@ def _per_block_clip_grad(
                 _, compute_layer_grad = _supported_layers_norm_sample_AND_clipping.get(type(layer))
                 grad_weight = compute_layer_grad(layer, layer.activations, torch.einsum('b...,b->b...',layer.backprops,C), C)
                 del layer.activations, layer.backprops
+                # pdb.set_trace()
+                # print(layer)
                 _create_or_extend_private_grad(layer.weight, grad_weight)
                 
             if hasattr(layer,'bias') and hasattr(layer.bias,'initially_requires_grad') and layer.bias.initially_requires_grad and hasattr(layer.bias,'grad_sample') and hasattr(layer.bias,'norm_sample'):
@@ -138,6 +142,9 @@ def _per_block_clip_grad(
         # compute per-sample grad norm and clipping factor
         if clipping_fn=='automatic':
             C = max_grad_norm_layerwise / (norm_sample + numerical_stability_constant)
+            # for no clipping
+            # C = torch.ones_like(C, dtype=torch.float16, device='cuda')
+            # pdb.set_trace()
         elif clipping_fn=='Abadi':
             C = torch.clamp_max(max_grad_norm_layerwise / (norm_sample + numerical_stability_constant), 1.)
         elif clipping_fn=='global':
@@ -150,7 +157,9 @@ def _per_block_clip_grad(
             #--- weight, compute clipped gradient
             _, compute_layer_grad = _supported_layers_norm_sample_AND_clipping.get(type(layer))
             grad_weight = compute_layer_grad(layer, layer.activations, torch.einsum('b...,b->b...',layer.backprops,C), C)
-            del layer.activations, layer.backprops
+            # if torch.isnan(grad_weight).any():
+            #     pdb.set_trace()
+            del layer.activations, layer.backprops  
             if hasattr(layer.weight,'grad_sample'):
                 print(type(layer))
             _create_or_extend_private_grad(layer.weight, grad_weight)

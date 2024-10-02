@@ -283,7 +283,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
                                     param.grad.zero_()
                                 #!!!!!!!!
 
-                                self.reduce_ready_partitions_and_remove_grads(param, i)
+                                self.reduce_ready_partitions_and_remove_grads(param)
     
                             grad_acc.register_hook(reduce_partition_and_remove_grads)
                             self.grad_accs.append(grad_acc)
@@ -341,7 +341,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
                                     param.grad.zero_()
                                 #!!!!!!!!
 
-                                self.reduce_ready_partitions_and_remove_grads(param, i)
+                                self.reduce_ready_partitions_and_remove_grads(param)
 
                             grad_acc.register_hook(reduce_partition_and_remove_grads)
                             self.grad_accs.append(grad_acc)

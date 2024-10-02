@@ -1,0 +1,1 @@
+python data/private_syn/clean_data.py --model deepseek-ai/deepseek-coder-1.3b-instruct

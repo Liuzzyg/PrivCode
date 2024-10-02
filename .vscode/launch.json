@@ -4,23 +4,51 @@
     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-        
-        
-
         {
             "name": "Python 调试程序: 当前文件",
             "type": "debugpy",
             "request": "launch",
-            "program": "${file}",
+            "program": "/u/fzv6en/anaconda3/envs/dpcode/bin/deepspeed",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {
                 "LD_LIBRARY_PATH": "/u/fzv6en/anaconda3/envs/dpcode/lib:${env.LD_LIBRARY_PATH}",
-                "PATH": "/u/fzv6en/anaconda3/envs/dpcode/bin:${env.PATH}"
+                "PATH": "/u/fzv6en/anaconda3/envs/dpcode/bin:${env.PATH}",
+                // "CUDA_VISIBLE_DEVICES": "7" 
+                // "ACCELERATE_CONFIG_FILE": "${workspaceFolder}/examples/starcoder/finetune/accelerate_config.json"
+                // "RANK": "0",
+                // "WORLD_SIZE": "1",
+                // "MASTER_ADDR": "localhost",
+                // "MASTER_PORT": "12355"
             },
             "args": [
-                // "--streaming",
+                // "--num_nodes=1",                        // 使用的节点数
+                // "--num_gpus=1",                         // 使用的GPU数量
+                // "--master_port=12355",                  // 设置主节点端口号
+                // "${workspaceFolder}/examples/starcoder/finetune/finetune_dp_deepspeed.py",  // 你的Python脚本路径
+                // "${workspaceFolder}/examples/starcoder/finetune/finetune_dp_codet5p.py",  // 你的Python脚本路径
+                // "--deepspeed_config", "${workspaceFolder}/examples/starcoder/finetune/config_stage1.json",  // DeepSpeed配置文件路径
+                // "--other_args"                          // 其他需要传递给脚本的参数
             ]
         }
     ]
 }
+
+
+
+
+// {
+//     // 使用 IntelliSense 了解相关属性。
+//     // 悬停以查看现有属性的描述。
+//     // 欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Python: 当前文件",
+//             "type": "debugpy",
+//             "request": "launch",
+//             "program": "${file}",
+//             "console": "integratedTerminal"
+//         }
+//     ]
+// }

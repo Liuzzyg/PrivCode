@@ -3,6 +3,7 @@ import json
 import os
 import re
 import shutil
+import pdb
 import warnings
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
@@ -20,7 +21,7 @@ from torch.utils.data.distributed import DistributedSampler
 from torch.utils.data.sampler import RandomSampler, SequentialSampler
 from tqdm.auto import tqdm, trange
 from transformers.data.data_collator import DataCollator, DataCollatorWithPadding, default_data_collator
-from transformers.file_utils import is_datasets_available, is_torch_tpu_available
+from transformers.file_utils import is_datasets_available
 from transformers.modeling_utils import PreTrainedModel
 from transformers.models.auto.modeling_auto import MODEL_FOR_QUESTION_ANSWERING_MAPPING
 from transformers.optimization import AdamW, get_linear_schedule_with_warmup
@@ -155,10 +156,10 @@ class Trainer:
         # Create output directory if needed
         if self.is_world_process_zero():
             os.makedirs(self.args.output_dir, exist_ok=True)
-        if is_torch_tpu_available():
-            # Set an xla_device flag on the model's config.
-            # We'll find a more elegant and not need to do this in the future.
-            self.model.config.xla_device = True
+        # if is_torch_tpu_available():
+        #     # Set an xla_device flag on the model's config.
+        #     # We'll find a more elegant and not need to do this in the future.
+        #     self.model.config.xla_device = True
         if not callable(self.data_collator) and callable(getattr(self.data_collator, "collate_batch", None)):
             self.data_collator = self.data_collator.collate_batch
             warnings.warn(
@@ -473,6 +474,7 @@ class Trainer:
                 if self.args.deepspeed_config:
                     model.step()
 
+                # pdb.set_trace()
                 # https://github.com/microsoft/DeepSpeed/issues/758
                 if (step + 1) % self.args.gradient_accumulation_steps == 0 or (
                     # last step in epoch but step is always smaller than gradient_accumulation_steps
@@ -489,7 +491,8 @@ class Trainer:
                         model.zero_grad(set_to_none=True)
                         
                     self.lr_scheduler.step()
-
+                            
+                    # pdb.set_trace()
                     self.global_step += 1
                     self.epoch = epoch + (step + 1) / len(epoch_iterator)
 
@@ -518,6 +521,7 @@ class Trainer:
                     if self.args.save_steps > 0 and self.global_step % self.args.save_steps == 0:
                         # In all cases (even distributed/parallel), self.model is always a reference
                         # to the model we want to save.
+                        # pdb.set_trace()
                         if hasattr(model, "module"):
                             self.model = model.module
                         else:
@@ -556,6 +560,7 @@ class Trainer:
             # Clean the state at the end of training
             delattr(self, "_past")
 
+        # pdb.set_trace()
         logger.info("\n\nTraining completed. Do not forget to share your model on huggingface.co/models =)\n\n")
         return TrainOutput(self.global_step, tr_loss.item() / self.global_step, metrics=dict())
 
@@ -689,10 +694,10 @@ class Trainer:
         Will only save from the world_master process (unless in TPUs).
         """
 
-        if is_torch_tpu_available():
-            self._save_tpu(output_dir)
-        elif self.is_world_process_zero():
-            self._save(output_dir)
+        # if is_torch_tpu_available():
+        #     self._save_tpu(output_dir)
+        # elif self.is_world_process_zero():
+        self._save(output_dir)
 
     def _save(self, output_dir: Optional[str] = None):
         output_dir = output_dir if output_dir is not None else self.args.output_dir

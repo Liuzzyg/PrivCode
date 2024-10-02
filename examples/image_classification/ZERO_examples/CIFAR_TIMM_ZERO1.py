@@ -25,7 +25,7 @@ def main(args):
     else:
         return "Must specify datasets as CIFAR10 or CIFAR100"
          
- 
+
     if torch.distributed.get_rank() == 0:
         # cifar data is downloaded, indicate other ranks can proceed
         torch.distributed.barrier()

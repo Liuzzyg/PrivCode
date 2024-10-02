@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=0,1 python data/private_syn/generate.py --model_path deepseek-ai/deepseek-coder-1.3b-instruct --step 50
