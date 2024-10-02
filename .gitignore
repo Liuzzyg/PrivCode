@@ -4,4 +4,3 @@ data/private_syn/cleaned_private_syndata.jsonl
 data/oss_instruction/starcoderdata_numpy_subset25k.jsonl
 data/private_syn/deepseek-coder-1.3b-instruct_private_syndata_55k_dp10.jsonl
 examples/starcoder/finetune/checkpoints/checkpoint-1000/adapter_model.safetensors
-examples/starcoder/finetune/checkpoints/checkpoint-1000/optimizer.pt
