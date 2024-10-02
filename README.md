@@ -1,5 +1,6 @@
-### Installation
-## dpcode
+## Installation
+
+### dpcode
 Install the required dependencies:
 
 ```
@@ -19,13 +20,13 @@ cd evalplus
 export PYTHONPATH=$PYTHONPATH:$(pwd)
 pip install -r requirements.txt
 ```
-## vllm
+### vllm
 
 ```
 pip install -r requirements_vllm.txt
 ```
 
-## bigcodebench
+### bigcodebench
 
 ```
 cd bigcodebench
@@ -38,13 +39,13 @@ pip install -e .[generate]
 pip install deepspeed==0.14.4
 ```
 
-### dp-finetune stage1
+## dp-finetune stage1
 ```
 conda activate dpcode
 sh run_finetune_dp_step1.sh
 ```
 
-### generate private syndata
+## generate private syndata
 ```
 conda activate vllm
 ```
@@ -55,7 +56,7 @@ sh data/private_syn/run_clean_data.sh
 sh data/private_syn/run_match_original_data.sh
 ```
 
-### finetune stage2
+## finetune stage2
 ```
 conda activate dpcode
 sh run_finetune_dp_step1.sh
