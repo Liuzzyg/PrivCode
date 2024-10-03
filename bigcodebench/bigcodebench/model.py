@@ -135,6 +135,7 @@ class VllmDecoder(DecoderBase):
             "tensor_parallel_size": int(os.getenv("VLLM_N_GPUS", tp)),
             "dtype": self.dtype,
             "trust_remote_code": self.trust_remote_code,
+            "download_dir": "/bigtemp/fzv6en/.cache/huggingface/hub"
         }
         if self.tokenizer_name is None:
             self.tokenizer_name = self.name
