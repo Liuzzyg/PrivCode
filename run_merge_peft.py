@@ -10,7 +10,7 @@ import pdb
 gpus = ['0', '1']
 
 dp_epsilons = [10]
-steps = [130]
+steps = [360]
 
 base_model = "deepseek-ai/deepseek-coder-6.7b-base"
 
