@@ -77,9 +77,9 @@ conda activate dpcode
 ```
 sh run_finetune_dp_step2.sh
 ```
-You can set 'MODEL_PATH_STEP1' to the model name in stage1, 'MODEL_PATH_STEP1' to the model name in stage2.  
+• You can set 'MODEL_PATH_STEP1' to the model name in stage1, 'MODEL_PATH_STEP1' to the model name in stage2.  
   
-Commit line 30-31 for finetuning on private syndata, while committing line 26-27 for finetuning on original data.
+• Commit line 30-31 for finetuning on private syndata, while committing line 26-27 for finetuning on original data.
 
 
 ## evaluate on evalplus
@@ -90,11 +90,11 @@ conda activate dpcode
 python run_evalplus.py
 ```
 
-Set "is_post_step = True" for evaluating checkpoint saved in dp-finetuning stage2.  
+• Set "is_post_step = True" for evaluating checkpoint saved in dp-finetuning stage2.  
   
-Set "is_private_syndata_step2s = ['yes', 'no']", 'yes' for evaluating model finetuned on private syndata, while 'no' for evaluating model finetuned on original data.  
+• Set "is_private_syndata_step2s = ['yes', 'no']", 'yes' for evaluating model finetuned on private syndata, while 'no' for evaluating model finetuned on original data.  
   
-Set "is_pretrained = True" for evaluating pretraining model locally.
+• Set "is_pretrained = True" for evaluating pretraining model locally.
 
 
 ## evaluate on bigcodebench
@@ -104,4 +104,4 @@ conda activate bigcodebench
 ```
 sh run_bigcodebench.sh
 ```
-You can adjust the script as needed by commenting unused command. Or you can leave this to me!
+You can adjust the script as needed by commenting unused command. Or you can leave this to me:)!
