@@ -8,7 +8,7 @@ export CUDA_VISIBLE_DEVICES=0,1
 MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 
-STEPS=360
+STEPS=130
 BATCH_SIZE=2
 TARGET_EPSILON=10
 
