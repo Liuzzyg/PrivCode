@@ -15,7 +15,7 @@ Babel==2.13.0
 backcall==0.2.0
 backports.functools-lru-cache==1.6.5
 beautifulsoup4==4.12.2
-bitsandbytes==0.39.0
+bitsandbytes==0.44.1
 bleach==6.1.0
 Brotli==1.1.0
 cached-property==1.5.2
@@ -27,7 +27,7 @@ colorama==0.4.6
 comm==0.1.4
 contourpy==1.2.1
 cycler==0.12.1
-dataclasses==0.8
+dataclasses==0.6
 datasets==2.11.0
 debugpy==1.8.0
 decorator==5.1.1
@@ -117,7 +117,7 @@ packaging==23.2
 pandas==2.1.1
 pandocfilters==1.5.0
 parso==0.8.3
-peft==0.12.1.dev0
+peft==0.12.0
 pexpect==4.8.0
 pickleshare==0.7.5
 Pillow==10.1.0
@@ -179,8 +179,7 @@ threadpoolctl==3.5.0
 tinycss2==1.2.1
 tokenizers==0.20
 tomli==2.0.1
-torch==2.0.0.post303
-torchvision==0.15.2a0+dd47d21
+torch==2.1.0+cu121
 tornado==6.3.3
 tqdm==4.65.0
 traitlets==5.11.2

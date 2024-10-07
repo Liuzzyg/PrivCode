@@ -1,14 +1,14 @@
 #!/bin/bash
 
-export CUDA_VISIBLE_DEVICES=0,1,2
+# export CUDA_VISIBLE_DEVICES=0,1,2
 
 # Script settings
-MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-instruct"
+MODEL_PATH=meta-llama/Meta-Llama-3.1-8B-Instruct
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
 MAX_STEPS=50
-BATCH_SIZE=4
+BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
 # DP settings
@@ -21,7 +21,7 @@ SAVE_FREQ=5
 # SAVE_FREQ_EPOCH=1
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step1/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}"
+OUTPUT_DIR="checkpoints_step1/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}"
 
 # Run the finetune script using deepspeed
 deepspeed finetune_dp_step1.py \

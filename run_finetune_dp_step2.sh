@@ -3,8 +3,8 @@
 export CUDA_VISIBLE_DEVICES=1
 
 # Script settings
-MODEL_PATH_STEP2="deepseek-ai/deepseek-coder-6.7b-base"
-MODEL_PATH_STEP1="deepseek-ai/deepseek-coder-1.3b-instruct"
+MODEL_PATH_STEP2=meta-llama/Meta-Llama-3.1-8B
+MODEL_PATH_STEP1=meta-llama/Meta-Llama-3.1-8B-Instruct
 
 # Training settings
 MAX_STEPS=130
@@ -24,7 +24,7 @@ MODEL_NAME_STEP2=$(echo $MODEL_PATH_STEP2 | awk -F '/' '{print $NF}')
 MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
 DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}_cleaned_private_syndata.jsonl"
-OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/${MODEL_NAME_STEP2}/dp${TARGET_EPSILON}_syndata"
+OUTPUT_DIR="checkpoints_step2/magicoder_syndata/${MODEL_NAME_STEP2}/dp${TARGET_EPSILON}_syndata"
 
 
 DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}_original_data.jsonl"

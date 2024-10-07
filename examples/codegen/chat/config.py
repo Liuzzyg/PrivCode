@@ -118,4 +118,4 @@ class TrainingArguments(transformers.TrainingArguments):
         default=True,
         metadata={"help": ("Whether to log and evaluate the first global_step or not.")},
     )
-    optim: Optional[str] = field(default="adamw_torch")
+    # optim: Optional[str] = field(default="adamw_torch")

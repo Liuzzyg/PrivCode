@@ -77,7 +77,7 @@ def get_args():
     parser.add_argument("--num_workers", type=int, default=None)
     # parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/starcoderdata_numpy/starcoder2-3b/dp1e-10")
     # parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/valid_synthetic_numpy/deepseek-coder-1.3b-instruct/nodp_nolora_1norm")
-    parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/magicoder/deepseek-coder-1.3b-instruct/dp10_lbs512_temp")
+    parser.add_argument("--output_dir", type=str, default="checkpoints/magicoder/deepseek-coder-1.3b-instruct/dp10_lbs512_temp")
     parser.add_argument("--log_freq", default=1, type=int)
     parser.add_argument("--eval_freq", default=1, type=int)
     parser.add_argument("--save_freq", default=5, type=int)
@@ -182,7 +182,6 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
-            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         # train_data = dataset["train"]
         # valid_data = dataset["test"]
@@ -286,7 +285,6 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         # load_in_8bit=True,
@@ -415,13 +413,13 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     params = model.parameters()
 
     # if not training_args.deepspeed_config:
-    optimizer = torch.optim.AdamW(
-        params=params,
-        lr=training_args.learning_rate,
-        betas=(training_args.adam_beta1, training_args.adam_beta2),
-        eps=training_args.adam_epsilon,
-    )
-    trainer.optimizer = optimizer
+    # optimizer = torch.optim.AdamW(
+    #     params=params,
+    #     lr=training_args.learning_rate,
+    #     betas=(training_args.adam_beta1, training_args.adam_beta2),
+    #     eps=training_args.adam_epsilon,
+    # )
+    # trainer.optimizer = optimizer
 
     print('privacy_args: ')
     print(json.dumps(privacy_args.__dict__, indent=4))
