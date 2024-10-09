@@ -7,7 +7,7 @@ from typing import List, Dict
 from evalplus_copy.humaneval import get_human_eval_plus
 from evalplus_copy.utils import write_jsonl
 
-from generate.generate import GEN_SOLUTION_deepseek, batch_GEN_SOLUTION
+from generate.generate import GEN_SOLUTION, batch_GEN_SOLUTION
 # from generate.generate_codeqwen import GEN_SOLUTION_CodeQwen
 # from generate.generate_codet5 import GEN_SOLUTION_Codet5p
 # from generate.generate_phi import GEN_SOLUTION_phi
