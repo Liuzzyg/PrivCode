@@ -122,7 +122,7 @@ def GEN_SOLUTION(base_checkpoint, model_checkpoint, dp_epsilon=None, step=None, 
 
     # extrace top [10, 20, 50] pp tokens 👉 subsequences
     subsequences = extract_low_perplexity_subsequences(completion, tokenizer, model)
-    pdb.set_trace()
+    # pdb.set_trace()
 
     return completion, subsequences
 
