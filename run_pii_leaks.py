@@ -7,7 +7,7 @@ import subprocess
 import pdb
 
 
-gpus = ['0', '2']
+gpus = ['1', '2']
 
 dp_epsilons = [10]
 steps = [130]
@@ -66,7 +66,7 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                         '--output_file', output_path
                     ]
                     
-                script_path = 'pii_leaks.py'
+                script_path = 'pii_leaks_copy.py'
                 
                 command = ['python', script_path] + [str(arg) for arg in arguments]
 

@@ -104,27 +104,33 @@ def GEN_SOLUTION(base_checkpoint, model_checkpoint, dp_epsilon=None, step=None, 
     outputs = model.generate(
         **inputs, 
         max_new_tokens=max_tokens,
-        eos_token_id=tokenizer.eos_token_id,
+        # eos_token_id=tokenizer.eos_token_id,
         # top_p=0.95,
+        num_return_sequences=n,
         temperature=temperature,
-        # do_sample=True,
+        do_sample=True, # 允许随机采样以生成多样化的输出
     )
     # prompt_length = inputs['input_ids'].shape[-1]
 
     # # Decode only the generated part (excluding the prompt)
     # completion = tokenizer.decode(outputs[0][prompt_length:], clean_up_tokenization_spaces=False)
 
+    results = []
 
-    # # clean_up_tokenization_spaces=False prevents a tokenizer edge case which can result in spaces being removed around punctuation
+    for i in range(n):
+        completion = tokenizer.decode(outputs[i][1:], clean_up_tokenization_spaces=False)
+        # extrace top [10, 20, 50] pp tokens 👉 subsequences
+        subsequences = extract_low_perplexity_subsequences(completion, tokenizer, model)
+        results.append({
+            "generated_text": completion,
+            "subsequences": subsequences
+        })
     # pdb.set_trace()
-    completion = tokenizer.decode(outputs[0][1:], clean_up_tokenization_spaces=False)
     # print("generation is: \n", completion)
 
-    # extrace top [10, 20, 50] pp tokens 👉 subsequences
-    subsequences = extract_low_perplexity_subsequences(completion, tokenizer, model)
     # pdb.set_trace()
 
-    return completion, subsequences
+    return results
 
 
 def batch_pii_GEN_SOLUTION(
