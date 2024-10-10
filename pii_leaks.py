@@ -8,29 +8,36 @@ from generate.generate import GEN_SOLUTION
 from pii_leakage.Prompt import get_all_queries
 
 def query_and_save(queries, base_checkpoint, model_checkpoint, output_file):
-    with open(output_file, 'a') as f:
-        for query in tqdm(queries):
-            prompt = query.prompt.text
-            # pdb.set_trace()
-            
-            try:
-                generated_text, subsequences = GEN_SOLUTION(base_checkpoint=base_checkpoint, model_checkpoint=model_checkpoint, prompt=prompt)
-            except Exception as e:
-                print(f"Error generating for prompt: {prompt}\n{str(e)}")
-                generated_text = None
-                subsequences = None
+    for query in tqdm(queries):
+        prompt = query.prompt.text
+        # pdb.set_trace()
+        
+        try:
+            results  = GEN_SOLUTION(
+                        base_checkpoint=base_checkpoint, 
+                        model_checkpoint=model_checkpoint, 
+                        prompt=prompt, 
+                        n=5, 
+                        temperature=query.params['temperature']
+                    )
+        except Exception as e:
+            print(f"Error generating for prompt: {prompt}\n{str(e)}")
+            results = []
 
-            result = {
-                'prompt': prompt,
-                'generated_text': generated_text,
-                'subsequences': subsequences
-            }
-            f.write(json.dumps(result) + '\n')
+        with open(output_file, 'a') as f:
+            for result in results:
+                ordered_result = {
+                    'prompt': prompt,
+                    'generated_text': result['generated_text'],
+                    'subsequences': result['subsequences']
+                }
+                f.write(json.dumps(ordered_result) + '\n')
 
     print(f"Results saved to {output_file}")
 
 
 if __name__ == '__main__':
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--base_checkpoint", type=str, default="deepseek-ai/deepseek-coder-6.7b-base")
