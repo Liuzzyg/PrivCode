@@ -13,6 +13,7 @@ dp_epsilons = [10]
 steps = [130]
 
 model = "deepseek-ai/deepseek-coder-6.7b-base"
+model = "deepseek-ai/deepseek-coder-1.3b-instruct"
 
 is_private_syndata_step2s = ['yes', 'no']   # 'yes' for model finetuned on private syndata, while 'no' for original data
 is_pretrained = False   # run evalplus on pretrain model

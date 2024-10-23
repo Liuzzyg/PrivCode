@@ -7,9 +7,9 @@ import pdb
 import copy
 
 parser = argparse.ArgumentParser()
-# parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct", help="which results to run")
+parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct", help="which results to run")
 # parser.add_argument("--model", type=str, default="Salesforce/codet5p-770m", help="which results to run")
-parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-6.7b-instruct", help="which results to run")
+# parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-6.7b-instruct", help="which results to run")
 parser.add_argument('--dp_epsilon', type=str, default='1e-10', help="the epsilon value for differential privacy")
 
 args = parser.parse_args()
@@ -61,7 +61,7 @@ model = PeftModel.from_pretrained(
     base_model, 
     # f"examples/starcoder/finetune/checkpoints/deepseek-coder-1.3b-instruct/dp{dp_epsilon}/final_checkpoint"
     # f"examples/starcoder/finetune/checkpoints/deepseek-coder-6.7b-instruct/dp{dp_epsilon}/final_checkpoint"
-    '/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/magicoder/deepseek-coder-6.7b-instruct/dp10/checkpoint-110'
+    '/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step1/private_api_numpy/deepseek-coder-1.3b-instruct/dp1_lbs512_codesnippet/checkpoint-60'
     # f'examples/starcoder/finetune/checkpoints/synthetic_numpy/deepseek-coder-1.3b-instruct/dp{args.dp_epsilon}/final_checkpoint'
 )
 

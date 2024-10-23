@@ -7,15 +7,19 @@ import subprocess
 import pdb
 
 
-gpus = ['0', '1']
+gpus = ['0', '1', '2']
 
 dp_epsilons = [10]
-steps = [360]
+# steps = [360]  # step2 finetuning
+
+steps = [80, 90, 70]  # baselines
 
 base_model = "deepseek-ai/deepseek-coder-6.7b-base"
 
 is_private_syndata_step2s = ['yes', 'no']   # 'yes' for model finetuned on private syndata, while 'no' for original data
-# is_private_syndata_step2s = ['yes']
+is_private_syndata_step2s = ['yes']
+is_baseline = True
+is_baseline = False
 
 max_workers = 20
 
@@ -36,35 +40,44 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     
     for dp_epsilon in dp_epsilons:
         for step in steps:
-            for is_private_syndata_step2 in is_private_syndata_step2s:
-                is_private_syndata_step2 = is_private_syndata_step2 in ['yes', 'y']
-                # pdb.set_trace()
-                model_name = base_model.split("/")[-1]
+            model_name = base_model.split("/")[-1]
+            if is_baseline:
+                peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dpsgd_baseline/checkpoint-{step}'
+                output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dpsgd_baseline_merged/checkpoint-{step}'
+                arguments = [
+                    '--base_model_name_or_path', base_model,
+                    '--peft_model_path', peft_model_path,
+                    '--save_merged_model_path', output_path,
+                ]
+            else:
+                for is_private_syndata_step2 in is_private_syndata_step2s:
+                    is_private_syndata_step2 = is_private_syndata_step2 in ['yes', 'y']
+                    # pdb.set_trace()
 
-                if is_private_syndata_step2:
-                    peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_syndata/checkpoint-{step}'
-                    output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_syndata_merged/checkpoint-{step}"
-                    arguments = [
-                        '--base_model_name_or_path', base_model,
-                        '--peft_model_path', peft_model_path,
-                        '--save_merged_model_path', output_path,
-                    ]
-                else:
-                    checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/original_data/checkpoint-{step}'
-                    output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/original_data_merged/checkpoint-{step}"
-                    arguments = [
-                        '--base_model_name_or_path', base_model,
-                        '--peft_model_path', peft_model_path,
-                        '--save_merged_model_path', output_path,
-                    ]
+                    if is_private_syndata_step2:
+                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_syndata/checkpoint-{step}'
+                        output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_syndata_merged/checkpoint-{step}"
+                        arguments = [
+                            '--base_model_name_or_path', base_model,
+                            '--peft_model_path', peft_model_path,
+                            '--save_merged_model_path', output_path,
+                        ]
+                    else:
+                        checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/original_data/checkpoint-{step}'
+                        output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/original_data_merged/checkpoint-{step}"
+                        arguments = [
+                            '--base_model_name_or_path', base_model,
+                            '--peft_model_path', peft_model_path,
+                            '--save_merged_model_path', output_path,
+                        ]
                     
-                script_path = 'examples/codegen/finetune/merge_peft_adapters.py'
-                
-                command = ['python', script_path] + [str(arg) for arg in arguments]
+            script_path = 'examples/codegen/finetune/merge_peft_adapters.py'
+            
+            command = ['python', script_path] + [str(arg) for arg in arguments]
 
-                futures.append(executor.submit(run_command_on_gpu, command, gpus[gpu_index]))
+            futures.append(executor.submit(run_command_on_gpu, command, gpus[gpu_index]))
 
-                gpu_index = (gpu_index + 1) % len(gpus)
-                time.sleep(10) # especially for fine-tuning
+            gpu_index = (gpu_index + 1) % len(gpus)
+            time.sleep(10) # especially for fine-tuning
 
     concurrent.futures.wait(futures)

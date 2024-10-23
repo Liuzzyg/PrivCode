@@ -30,7 +30,8 @@ def main(args):
         prompts=prompts,
         checkpoint_path=args.checkpoint_path,
         is_pretrained=args.is_pretrained,
-        is_post_step=args.is_post_step
+        # is_post_step=args.is_post_step,
+        is_baseline=args.is_baseline
     )
     
     samples = [{'task_id': task_id, 'solution': solution} for task_id, solution in zip(task_ids, solutions)]
@@ -56,7 +57,8 @@ if __name__ == '__main__':
     parser.add_argument("--output_path", type=str, default="generate/evalplus/magicoder/step2/samples_model_args.dp_epsilon_test_args.step.jsonl")
     parser.add_argument('--batch_size', type=int, default=6)
     parser.add_argument('--is_pretrained', action="store_true")
-    parser.add_argument('--is_post_step', action="store_true")
+    # parser.add_argument('--is_post_step', action="store_true")
+    parser.add_argument('--is_baseline', action="store_true")
 
     args = parser.parse_args()
 

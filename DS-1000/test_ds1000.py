@@ -73,22 +73,27 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct", help="which results to run")
-    parser.add_argument('--dp_epsilon', type=str, default='1e10', help="the epsilon value for differential privacy")
+    parser.add_argument('--dp_epsilon', type=str, default='10', help="the epsilon value for differential privacy")
 
-    parser.add_argument('--epoch', type=str, default='0', help="the epsilon value for differential privacy")
+    parser.add_argument('--step', type=str, default='0', help="the epsilon value for differential privacy")
+    parser.add_argument("--samples", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct", help="which results to run")
 
     args = parser.parse_args()
     
     model_name = args.model.replace('/', '-')
+    
     # pdb.set_trace()
-    # generated_code = [json.loads(l) for l in open(f"generate/ds1000/synthetic_numpy/{model_name}-dp{args.dp_epsilon}_nolora_1norm_epoch{args.epoch}-answers.jsonl", "r").readlines()]
-    generated_code = [json.loads(l) for l in open(f"generate/ds1000/valid_synthetic_numpy/{model_name}-nodp_nolora_1norm_epoch{args.epoch}-answers.jsonl", "r").readlines()]
+    generated_code = [json.loads(l) for l in open(args.samples, "r").readlines()]
+    # generated_code = [json.loads(l) for l in open(f"generate/ds1000/private_api_numpy/{model_name}-nodp_nolora_1norm_epoch{args.epoch}-answers.jsonl", "r").readlines()]
     answers = [postprocess(l['code']) for l in generated_code]
     print(args.model)
     summary = eval_ds1000(answers)
 
     output_dir = 'generate/ds1000/'
     os.makedirs(output_dir, exist_ok=True)
-    # with open(f'generate/ds1000/synthetic_numpy/{model_name}-dp{args.dp_epsilon}_nolora_1norm_epoch{args.epoch}-result.txt', 'w') as f:
-    with open(f'generate/ds1000/valid_synthetic_numpy/{model_name}-nodp_nolora_1norm_epoch{args.epoch}-result.txt', 'w') as f:
+    
+    result_path = args.samples.rsplit("-answers.jsonl", 1)[0]
+
+    with open(f'{result_path}-result.txt', 'w') as f:
+    # with open(f'generate/ds1000/private_api_numpy/{model_name}-nodp_nolora_1norm_epoch{args.epoch}-result.txt', 'w') as f:
         f.write(summary)
