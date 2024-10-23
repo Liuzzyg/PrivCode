@@ -62,6 +62,9 @@ def clean_data_with_language(input_file, output_file):
             # If there are at least two occurrences of triple backticks
             if len(code_sections) > 2:
                 cleaned_solution = code_sections[1].strip()
+                
+                if len(cleaned_solution) > 1400:
+                    continue
 
                 # Use the hash map to find the matched language
                 matched_language = problem_language_map.get(problem.strip().lower(), 'unknown')
@@ -98,7 +101,7 @@ def clean_data_with_language(input_file, output_file):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-base")
+    parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct")
 
     args = parser.parse_args()
 

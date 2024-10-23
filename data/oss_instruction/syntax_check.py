@@ -1,10 +1,8 @@
 import json
 import ast
 
-input_file_path  = "data/processed_instruction_data_25.jsonl"
-
-output_file_path = "data/valid_processed_instruction_data_25k.jsonl"
-
+input_file_path = "data/oss_instruction/processed_instruction_data_25k.jsonl"
+output_file_path = "data/oss_instruction/valid_processed_instruction_data_25k.jsonl"
 
 valid_solutions = 0
 total_samples = 0
@@ -15,7 +13,15 @@ with open(input_file_path, 'r') as infile:
         total_samples += 1
         sample = json.loads(line)
         solution_code = sample.get("Solution", "")
+        problem_text = sample.get("Problem", "")
+        
+        # 检查字符串长度
+        if len(solution_code) > 2000 or len(problem_text) > 2000:
+            print(f"Sample {sample['index']} is filtered out due to length restriction.")
+            continue
+        
         try:
+            # 检查代码的语法
             ast.parse(solution_code)
             valid_solutions += 1
             valid_samples.append(sample)

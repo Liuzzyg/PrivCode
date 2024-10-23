@@ -1,0 +1,6 @@
+{
+  "pass@1": 0.31842105263157894,
+  "model": "deepseek-coder-6.7b-base--step80",
+  "calibrated": true,
+  "subset": "full"
+}

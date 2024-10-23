@@ -5,6 +5,7 @@ most libraries such as huggingface, timm, torchvision, etc.
 """
 
 import logging
+import pdb
 import math
 import types
 from typing import Dict, Optional, Sequence, Union
@@ -37,6 +38,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
         noise_multiplier: Optional[float] = None,
         target_epsilon: Optional[float] = None,
         target_delta: Optional[float] = None,
+        non_private: bool,
         alphas: Sequence[float] = accounting_manager.DEFAULT_ALPHAS,
         named_params: Optional[Sequence] = None,
         numerical_stability_constant=None,
@@ -120,6 +122,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
         self.effective_noise_multiplier = noise_multiplier / batch_size
         self.target_epsilon = target_epsilon
         self.target_delta = target_delta
+        self.non_private = non_private
         self.alphas = alphas
         self.eps_error = eps_error
         self.accounting_mode = accounting_mode
@@ -230,125 +233,126 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
 
         self.module.privacy_engine = self
 
+        if not self.non_private:
+            # deepspeed stage 3 modification-----------
+            from deepspeed.runtime.zero.stage3 import DeepSpeedZeroOptimizer_Stage3, print_rank_0
 
-        # deepspeed stage 3 modification-----------
-        from deepspeed.runtime.zero.stage3 import DeepSpeedZeroOptimizer_Stage3, print_rank_0
+            def zero_grad_DP_stage3(self, set_grads_to_None=True):
+                """
+                Zero FP16 parameter grads.
+                """
+                #print(self.micro_step_id)
+                self.micro_step_id = 0
 
-        def zero_grad_DP_stage3(self, set_grads_to_None=True):
-            """
-            Zero FP16 parameter grads.
-            """
-            #print(self.micro_step_id)
-            self.micro_step_id = 0
-
-            # FP32 grad should never exist.
-            # For speed, set model fp16 grad to None by default
-            for group in self.fp16_groups:
-                for p in group:
-                    if set_grads_to_None:
-                        if p.grad is not None and p.grad.is_cuda:
-                            p.grad.record_stream(torch.cuda.current_stream())
-                        p.grad = None
-                    else:
-                        if p.grad is not None:
-                            p.grad.detach_()
-                            p.grad.zero_()
-                    if hasattr(p,'private_grad'): #zhiqi: del private_grad so next step adds noise in supported...py
-                        del p.private_grad
-                        
-        DeepSpeedZeroOptimizer_Stage3.zero_grad = zero_grad_DP_stage3
+                # FP32 grad should never exist.
+                # For speed, set model fp16 grad to None by default
+                for group in self.fp16_groups:
+                    for p in group:
+                        if set_grads_to_None:
+                            if p.grad is not None and p.grad.is_cuda:
+                                p.grad.record_stream(torch.cuda.current_stream())
+                            p.grad = None
+                        else:
+                            if p.grad is not None:
+                                p.grad.detach_()
+                                p.grad.zero_()
+                        if hasattr(p,'private_grad'): #zhiqi: del private_grad so next step adds noise in supported...py
+                            del p.private_grad
+                            
+            DeepSpeedZeroOptimizer_Stage3.zero_grad = zero_grad_DP_stage3
+            
+            def create_reduce_and_remove_grad_hooks_DP_stage3(self):
+                print_rank_0(f'[Begin] Create gradient reduction hooks')
+                self.grad_accs = []
+                for i, param_group in enumerate(self.fp16_groups):
+                    for param in param_group:
+                        if param.requires_grad:
+                            #print_rank_0(f" Before all gather {param.device}, {param.shape}")
         
-        def create_reduce_and_remove_grad_hooks_DP_stage3(self):
-            print_rank_0(f'[Begin] Create gradient reduction hooks')
-            self.grad_accs = []
-            for i, param_group in enumerate(self.fp16_groups):
-                for param in param_group:
-                    if param.requires_grad:
-                        #print_rank_0(f" Before all gather {param.device}, {param.shape}")
-    
-                        # The hook must be created in un-partitioned parameter
-                        param.all_gather()
-    
-                        #print(f"After all gather {param.device}, {param.shape}")
-                        def wrapper(param, i):
-                            param_tmp = param.expand_as(param)
-                            grad_acc = param_tmp.grad_fn.next_functions[0][0]
-    
-                            def reduce_partition_and_remove_grads(*notneeded):
-                                #!!!!!!!!
-                                if hasattr(param,'private_grad'):
-                                    param.grad=torch.nan_to_num(param.private_grad).contiguous() / param.batch_size * self.loss_scale # it works
-                                    param.private_grad = None # release memory
-                                else:
-                                    param.grad.zero_()
-                                #!!!!!!!!
-
-                                self.reduce_ready_partitions_and_remove_grads(param)
-    
-                            grad_acc.register_hook(reduce_partition_and_remove_grads)
-                            self.grad_accs.append(grad_acc)
-    
-                        #print(f"param grad fn {param.expand_as(param).grad_fn}")
-                        wrapper(param, i)
-    
-                        # Partition the parameter after creating the hook
-                        param.partition()
-            print_rank_0(f'[End] Create gradient reduction hooks')
-
-        DeepSpeedZeroOptimizer_Stage3.create_reduce_and_remove_grad_hooks = create_reduce_and_remove_grad_hooks_DP_stage3
+                            # The hook must be created in un-partitioned parameter
+                            param.all_gather()
         
+                            #print(f"After all gather {param.device}, {param.shape}")
+                            def wrapper(param, i):
+                                param_tmp = param.expand_as(param)
+                                grad_acc = param_tmp.grad_fn.next_functions[0][0]
         
-        # deepspeed stage 2 modification-----------
-        from deepspeed.runtime.zero.stage_1_and_2 import DeepSpeedZeroOptimizer
+                                def reduce_partition_and_remove_grads(*notneeded):
+                                    #!!!!!!!!
+                                    if hasattr(param,'private_grad'):
+                                        param.grad=torch.nan_to_num(param.private_grad).contiguous() / param.batch_size * self.loss_scale # it works
+                                        param.private_grad = None # release memory
+                                    else:
+                                        param.grad.zero_()
+                                    #!!!!!!!!
 
-        def zero_grad_DP_stage2(self, set_grads_to_None=True):
-            """
-            Zero FP16 parameter grads.
-            """
-            #print(self.micro_step_id)
+                                    self.reduce_ready_partitions_and_remove_grads(param)
+        
+                                grad_acc.register_hook(reduce_partition_and_remove_grads)
+                                self.grad_accs.append(grad_acc)
+        
+                            #print(f"param grad fn {param.expand_as(param).grad_fn}")
+                            wrapper(param, i)
+        
+                            # Partition the parameter after creating the hook
+                            param.partition()
+                print_rank_0(f'[End] Create gradient reduction hooks')
 
-            # FP32 grad should never exist.
-            # For speed, set model fp16 grad to None by default
-            for group in self.bit16_groups:
-                for p in group:
-                    if set_grads_to_None:
-                        p.grad = None  # epilogue and in step
-                    else:
-                        if p.grad is not None:
-                            p.grad.detach_()
-                            p.grad.zero_()
-                    if hasattr(p,'private_grad') and self.micro_step_id == -1:#zhiqi, https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/runtime/zero/stage_1_and_2.py#L1752
-                        del p.private_grad
+            DeepSpeedZeroOptimizer_Stage3.create_reduce_and_remove_grad_hooks = create_reduce_and_remove_grad_hooks_DP_stage3
+            
+            
+            # deepspeed stage 2 modification-----------
+            from deepspeed.runtime.zero.stage_1_and_2 import DeepSpeedZeroOptimizer
 
-        DeepSpeedZeroOptimizer.zero_grad = zero_grad_DP_stage2
+            def zero_grad_DP_stage2(self, set_grads_to_None=True):
+                """
+                Zero FP16 parameter grads.
+                """
+                #print(self.micro_step_id)
 
-        def create_reduce_and_remove_grad_hooks_DP_stage2(self):
-            self.grad_accs = []
-            for i, param_group in enumerate(self.bit16_groups):
-                for param in param_group:
-                    if param.requires_grad:
+                # FP32 grad should never exist.
+                # For speed, set model fp16 grad to None by default
+                for group in self.bit16_groups:
+                    for p in group:
+                        if set_grads_to_None:
+                            p.grad = None  # epilogue and in step
+                        else:
+                            if p.grad is not None:
+                                p.grad.detach_()
+                                p.grad.zero_()
+                        if hasattr(p,'private_grad') and self.micro_step_id == -1:#zhiqi, https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/runtime/zero/stage_1_and_2.py#L1752
+                            del p.private_grad
 
-                        def wrapper(param, i):
-                            param_tmp = param.expand_as(param)
-                            grad_acc = param_tmp.grad_fn.next_functions[0][0]
+            DeepSpeedZeroOptimizer.zero_grad = zero_grad_DP_stage2
 
-                            def reduce_partition_and_remove_grads(*notneeded):
-                                #!!!!!!!!
-                                if hasattr(param,'private_grad'):
-                                    param.grad=torch.nan_to_num(param.private_grad).contiguous() / param.batch_size * self.loss_scale # it works
-                                    param.private_grad = None # release memory
-                                else:
-                                    param.grad.zero_()
-                                #!!!!!!!!
+            def create_reduce_and_remove_grad_hooks_DP_stage2(self):
+                self.grad_accs = []
+                for i, param_group in enumerate(self.bit16_groups):
+                    for param in param_group:
+                        if param.requires_grad:
 
-                                self.reduce_ready_partitions_and_remove_grads(param)
+                            def wrapper(param, i):
+                                param_tmp = param.expand_as(param)
+                                grad_acc = param_tmp.grad_fn.next_functions[0][0]
 
-                            grad_acc.register_hook(reduce_partition_and_remove_grads)
-                            self.grad_accs.append(grad_acc)
+                                def reduce_partition_and_remove_grads(*notneeded):
+                                    #!!!!!!!!
+                                    if hasattr(param,'private_grad'):
+                                        pdb.set_trace()
+                                        param.grad=torch.nan_to_num(param.private_grad).contiguous() / param.batch_size * self.loss_scale # it works
+                                        param.private_grad = None # release memory
+                                    else:
+                                        param.grad.zero_()
+                                    #!!!!!!!!
 
-                        wrapper(param, i)
+                                    self.reduce_ready_partitions_and_remove_grads(param)
 
-        DeepSpeedZeroOptimizer.create_reduce_and_remove_grad_hooks = create_reduce_and_remove_grad_hooks_DP_stage2
+                                grad_acc.register_hook(reduce_partition_and_remove_grads)
+                                self.grad_accs.append(grad_acc)
+
+                            wrapper(param, i)
+
+            DeepSpeedZeroOptimizer.create_reduce_and_remove_grad_hooks = create_reduce_and_remove_grad_hooks_DP_stage2
 
         # FSDP modification----------- fairscale == 0.4.13
         from fairscale.nn.data_parallel import FullyShardedDataParallel

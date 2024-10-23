@@ -218,15 +218,22 @@ def batch_GEN_SOLUTION(
     prompts: List[str],
     checkpoint_path: str,
     is_pretrained: bool,
-    is_post_step: bool,
+    # is_post_step: bool,
+    is_baseline: bool
 ) -> List[str]:
 
     device = "cuda" # for GPU usage or "cpu" for CPU usage
 
     tokenizer = AutoTokenizer.from_pretrained(base_checkpoint)
 
-    if not is_pretrained:
-        if is_post_step:
+    if is_baseline:
+        model = AutoModelForCausalLM.from_pretrained(
+            checkpoint_path,
+            # resume_download=True,
+            use_auth_token=True,
+        ).to(device)
+    else:
+        if not is_pretrained:
             base_model = AutoModelForCausalLM.from_pretrained(
                 base_checkpoint,
                 cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
@@ -240,23 +247,14 @@ def batch_GEN_SOLUTION(
                 checkpoint_path
             )
             model = model.merge_and_unload().to(device)
+            
         else:
-            model = AutoModelForCausalLM.from_pretrained(
-                # f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/magicoder/{model_name}/nodp/checkpoint-{step}',  
-                # f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/magicoder/{model_name}/dp{dp_epsilon}/checkpoint-{step}', 
-                # f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints/magicoder/{model_name}/dp{dp_epsilon}_lbs2024/checkpoint-{step}', 
-                # f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_step800/checkpoint-{step}',
-                checkpoint_path,
-                resume_download=True,
+            base_model = AutoModelForCausalLM.from_pretrained(
+                base_checkpoint,
+                cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
                 use_auth_token=True,
-            ).to(device)
-    else:
-        base_model = AutoModelForCausalLM.from_pretrained(
-            base_checkpoint,
-            cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
-            use_auth_token=True,
-        ) 
-        model = base_model.to(device)
+            ) 
+            model = base_model.to(device)
 
 
     formatted_prompts = [prompts[i: i + batch_size] for i in range(0, len(prompts), batch_size)]

@@ -1,0 +1,20 @@
+          score
+count  1000.000
+mean      0.231
+           score       
+           count   mean
+library                
+Matplotlib   155  0.361
+Numpy        220  0.282
+Pandas       291  0.117
+Pytorch       68  0.191
+Scipy        106  0.245
+Sklearn      115  0.348
+Tensorflow    45  0.000
+                  score       
+                  count   mean
+perturbation_type             
+Difficult-Rewrite   162  0.086
+Origin              452  0.294
+Semantic            234  0.222
+Surface             152  0.211
