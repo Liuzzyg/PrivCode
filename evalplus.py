@@ -18,6 +18,7 @@ from generate.generate import GEN_SOLUTION, batch_GEN_SOLUTION
 def main(args):
     problems = get_human_eval_plus()
     prompts = [problem["prompt"] for problem in problems.values()]
+    # pdb.set_trace()
     task_ids = list(problems.keys())
 
     # prompts = prompts[:5]

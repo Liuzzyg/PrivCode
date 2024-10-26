@@ -1,19 +1,20 @@
 #!/bin/bash
 
-# export CUDA_VISIBLE_DEVICES=0,1,2,3
-export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+# export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
-MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-instruct"
-# MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+# MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-instruct"
+MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
 MAX_STEPS=0
-BATCH_SIZE=4
+BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
-LAMBDA=0.02
+LAMBDA=0.05
+KL_STEP=5
 
 # DP settings
 TARGET_EPSILON=10
@@ -25,7 +26,7 @@ SAVE_FREQ=5
 # SAVE_FREQ_EPOCH=1
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}"
+OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}_klstep${KL_STEP}"
 
 # Run the finetune script using deepspeed
 deepspeed finetune_astdp.py \
@@ -40,6 +41,7 @@ deepspeed finetune_astdp.py \
     --target_epsilon $TARGET_EPSILON \
     --non_private $NON_PRIVATE \
     --lambda_kl $LAMBDA \
-    --deepspeed_config examples/codegen/finetune/config_stage1.json
+    --kl_step $KL_STEP \
+    --deepspeed_config examples/codegen/finetune/config_stage2.json
 
 exit 0
