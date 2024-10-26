@@ -7,23 +7,22 @@ import subprocess
 import pdb
 
 
-gpus = ['0', '1']
-# gpus = ['3']
+gpus = ['0', '1', '2', '3']
+# gpus = ['0', '1']
 
 dp_epsilons = [10]
-lambda_kl = [0.02]
-steps = [30, 40, 50, 60]
+lambda_kl = [0.05]
+kl_step = 5
+steps = [150, 160, 175, 185]
+# steps = [65]
 
-# model = "deepseek-ai/deepseek-coder-6.7b-base"
-model = "deepseek-ai/deepseek-coder-1.3b-instruct"
+model = "deepseek-ai/deepseek-coder-6.7b-base"
+# model = "deepseek-ai/deepseek-coder-1.3b-instruct"
 batch_size = 16
 
 is_post_step = False   # true for step2
-is_private_syndata_step2s = ['yes', 'no']   # 'yes' for model finetuned on private syndata, while 'no' for original data
-is_private_syndata_step2s = ['no']
-is_pretrained = False   # run evalplus on pretrain model
 
-max_workers = 2
+max_workers = 4
 
 
 def get_directories(path):
@@ -43,59 +42,24 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     for dp_epsilon in dp_epsilons:
         for lam in lambda_kl:
             for step in steps:
-                for is_private_syndata_step2 in is_private_syndata_step2s:
-                    is_private_syndata_step2 = is_private_syndata_step2 in ['yes', 'y']
-                    # pdb.set_trace()
-                    model_name = model.split("/")[-1]
-                    if not is_pretrained:
-                        if not is_post_step:
-                            output_path = f"generate/evalplus/magicoder/astdp/samples_{model_name}_dp{dp_epsilon}_lambda{lam}_step{step}.jsonl"
-                            checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lam}/checkpoint-{step}'
-                            arguments = [
-                                '--checkpoint', model,
-                                '--checkpoint_path', checkpoint_path,
-                                '--output_path', output_path,
-                                '--batch_size', batch_size
-                            ]
-                        else:
-                            if is_private_syndata_step2:
-                                output_path = f"generate/evalplus/magicoder/step2/samples_{model_name}_dp{dp_epsilon}_filtered_syndata_step{step}.jsonl"
-                                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dp{dp_epsilon}_syndata/checkpoint-{step}'
-                                arguments = [
-                                    '--checkpoint', model,
-                                    '--checkpoint_path', checkpoint_path,
-                                    '--output_path', output_path,
-                                    '--batch_size', batch_size,
-                                    # '--is_post_step'
-                                ]
-                            else:
-                                output_path = f"generate/evalplus/magicoder/step2/samples_{model_name}_filtered_original_data_step{step}.jsonl"
-                                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/original_data/checkpoint-{step}'
-                                arguments = [
-                                    '--checkpoint', model,
-                                    '--checkpoint_path', checkpoint_path,
-                                    '--output_path', output_path,
-                                    '--batch_size', batch_size,
-                                    # '--is_post_step'
-                                ]
-                    else:
-                        output_path = f"generate/evalplus/pretrained_model/samples_{model_name}.jsonl"
-                        checkpoint_path = None
-                        arguments = [
-                            '--checkpoint', model,
-                            '--checkpoint_path', checkpoint_path,
-                            '--output_path', output_path,
-                            '--batch_size', batch_size,
-                            '--is_pretrained'
-                        ]
-                        
-                    script_path = 'evalplus.py'
-                    
-                    command = ['python', script_path] + [str(arg) for arg in arguments]
+                # pdb.set_trace()
+                model_name = model.split("/")[-1]
+                output_path = f"generate/evalplus/magicoder/astdp/samples_{model_name}_dp{dp_epsilon}_lambda{lam}_klstep{kl_step}_step{step}.jsonl"
+                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lam}_klstep{kl_step}/checkpoint-{step}'
+                arguments = [
+                    '--checkpoint', model,
+                    '--checkpoint_path', checkpoint_path,
+                    '--output_path', output_path,
+                    '--batch_size', batch_size
+                ]
 
-                    futures.append(executor.submit(run_command_on_gpu, command, gpus[gpu_index]))
+                script_path = 'evalplus.py'
+                
+                command = ['python', script_path] + [str(arg) for arg in arguments]
 
-                    gpu_index = (gpu_index + 1) % len(gpus)
-                    time.sleep(10) # especially for fine-tuning
+                futures.append(executor.submit(run_command_on_gpu, command, gpus[gpu_index]))
+
+                gpu_index = (gpu_index + 1) % len(gpus)
+                time.sleep(10) # especially for fine-tuning
 
     concurrent.futures.wait(futures)

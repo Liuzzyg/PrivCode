@@ -45,14 +45,6 @@ def get_args():
     # # # magicoder oss instruct data
     parser.add_argument("--input_column_name", type=str, default="problem")
     parser.add_argument("--output_column_name", type=str, default="solution")
-    # # # # alpaca
-    # parser.add_argument("--input_column_name", type=str, default="prompt")
-    # parser.add_argument("--output_column_name", type=str, default="completion")
-    # # starcoderdata
-    # parser.add_argument("--column_name", type=str, default="content")
-    # parser.add_argument("--input_column_name", type=str, default="Problem")
-    # parser.add_argument("--output_column_name", type=str, default="Solution")
-
     parser.add_argument("--seq_length", type=int, default=1024)
     parser.add_argument("--max_steps", type=int, default=1)
     parser.add_argument("--epochs", type=int, default=200)
@@ -84,6 +76,7 @@ def get_args():
     parser.add_argument("--save_freq_epoch", default=1, type=int)
 
     parser.add_argument("--lambda_kl", type=float, default=0.1)
+    parser.add_argument("--kl_step", type=int, default=5)
 
     # DP
     parser.add_argument("--logical_batch_size", type=int, default=256)
@@ -287,7 +280,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
-        # load_in_8bit=True,
+        load_in_8bit=True,
         # device_map="auto",
         device_map={"": Accelerator().process_index},
         # device_map={'':torch.cuda.current_device()}
@@ -297,15 +290,15 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
-        # load_in_8bit=True,
+        load_in_8bit=True,
         # device_map="auto",
         device_map={"": Accelerator().process_index},
         # device_map={'':torch.cuda.current_device()}
     )
     print(type(model))
     
-    # model = prepare_model_for_kbit_training(model)
-    # model_pretrain = prepare_model_for_kbit_training(model_pretrain)
+    model = prepare_model_for_kbit_training(model)
+    model_pretrain = prepare_model_for_kbit_training(model_pretrain)
 
     print(type(model))
     # pdb.set_trace()
@@ -384,25 +377,46 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         clipping_mode=args.clipping_mode 
     )
 
-    privacy_engine = PrivacyEngine(
-        module=model,
-        batch_size=args.logical_batch_size,
-        sample_size=total_train_data_length,
-        epochs=training_args.num_train_epochs,
-        max_grad_norm=privacy_args.per_example_max_grad_norm,
-        noise_multiplier=privacy_args.noise_multiplier,
-        target_epsilon=privacy_args.target_epsilon,
-        target_delta=privacy_args.target_delta,
-        non_private=privacy_args.non_private,
-        accounting_mode=privacy_args.accounting_mode,
-        clipping_mode=privacy_args.clipping_mode,
-        clipping_fn=privacy_args.clipping_fn,
-        clipping_style='layer-wise',
-        # clipping_style=privacy_args.clipping_style,
-        # origin_params=origin_params,
-        num_GPUs=num_GPUs,
-        torch_seed_is_fixed=True,
-    )
+    if 'stage1' in args.deepspeed_config:
+        privacy_engine = PrivacyEngine(
+            module=model,
+            batch_size=args.logical_batch_size,
+            sample_size=total_train_data_length,
+            epochs=training_args.num_train_epochs,
+            max_grad_norm=privacy_args.per_example_max_grad_norm,
+            noise_multiplier=privacy_args.noise_multiplier,
+            target_epsilon=privacy_args.target_epsilon,
+            target_delta=privacy_args.target_delta,
+            non_private=privacy_args.non_private,
+            accounting_mode=privacy_args.accounting_mode,
+            clipping_mode=privacy_args.clipping_mode,
+            clipping_fn=privacy_args.clipping_fn,
+            clipping_style='layer-wise',
+            # clipping_style=privacy_args.clipping_style,
+            # origin_params=origin_params,
+            num_GPUs=num_GPUs,
+            torch_seed_is_fixed=True,
+        )
+    else:        
+        privacy_engine = PrivacyEngine_Distributed_Stage_2_and_3(
+            module=model,
+            batch_size=args.logical_batch_size,
+            sample_size=total_train_data_length,
+            epochs=training_args.num_train_epochs,
+            max_grad_norm=privacy_args.per_example_max_grad_norm,
+            noise_multiplier=privacy_args.noise_multiplier,
+            target_epsilon=privacy_args.target_epsilon,
+            target_delta=privacy_args.target_delta,
+            non_private=privacy_args.non_private,
+            accounting_mode=privacy_args.accounting_mode,
+            clipping_mode=privacy_args.clipping_mode,
+            clipping_fn=privacy_args.clipping_fn,
+            clipping_style='layer-wise',
+            # clipping_style=privacy_args.clipping_style,
+            # origin_params=origin_params,
+            num_GPUs=num_GPUs,
+            torch_seed_is_fixed=True,
+        )
 
     # Originally, these could have been null.
     privacy_args.noise_multiplier = privacy_engine.noise_multiplier
@@ -417,7 +431,9 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         privacy_args=privacy_args,
         train_dataset=train_data, 
         eval_dataset=val_data,
-        lambda_kl=args.lambda_kl
+        lambda_kl=args.lambda_kl,
+        dataset_name=args.dataset_name,
+        kl_step=args.kl_step
         )
 
 

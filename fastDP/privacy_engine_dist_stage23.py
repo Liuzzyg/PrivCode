@@ -304,7 +304,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
             # deepspeed stage 2 modification-----------
             from deepspeed.runtime.zero.stage_1_and_2 import DeepSpeedZeroOptimizer
 
-            def zero_grad_DP_stage2(self, set_grads_to_None=True):
+            def zero_grad_DP_stage2(self, set_to_none=True):
                 """
                 Zero FP16 parameter grads.
                 """
@@ -314,7 +314,7 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
                 # For speed, set model fp16 grad to None by default
                 for group in self.bit16_groups:
                     for p in group:
-                        if set_grads_to_None:
+                        if set_to_none:
                             p.grad = None  # epilogue and in step
                         else:
                             if p.grad is not None:
@@ -338,14 +338,14 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
                                 def reduce_partition_and_remove_grads(*notneeded):
                                     #!!!!!!!!
                                     if hasattr(param,'private_grad'):
-                                        pdb.set_trace()
+                                        # pdb.set_trace()
                                         param.grad=torch.nan_to_num(param.private_grad).contiguous() / param.batch_size * self.loss_scale # it works
                                         param.private_grad = None # release memory
                                     else:
                                         param.grad.zero_()
                                     #!!!!!!!!
 
-                                    self.reduce_ready_partitions_and_remove_grads(param)
+                                    self.reduce_ready_partitions_and_remove_grads(param, i)
 
                                 grad_acc.register_hook(reduce_partition_and_remove_grads)
                                 self.grad_accs.append(grad_acc)

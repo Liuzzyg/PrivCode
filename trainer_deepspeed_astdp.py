@@ -106,6 +106,8 @@ class Trainer:
         val_dataset: Optional[Dataset] = None,
         generation_stuff: Optional[Dict] = None,
         lambda_kl: float = None,
+        dataset_name: str = None,
+        kl_step: int = None,
         **kwargs,
     ):
         if args is None:
@@ -197,6 +199,8 @@ class Trainer:
             # os.environ['MASTER_PORT'] = '12359'
         
         self.lambda_kl = lambda_kl
+        self.dataset_name = dataset_name
+        self.kl_step = kl_step
 
     def _remove_unused_columns(self, dataset: "datasets.Dataset", description: Optional[str] = None):
         if not self.args.remove_unused_columns:
@@ -573,7 +577,7 @@ class Trainer:
                     epoch_pbar.update(1)
                     continue
                 
-                tr_loss += self.training_step(model, model_pretrain, inputs, step)
+                tr_loss += self.training_step(model, model_pretrain, inputs, step, self.kl_step)
                 self.total_flos += self.floating_point_ops(inputs)
 
                 if self.args.deepspeed_config:
@@ -752,14 +756,14 @@ class Trainer:
         inputs.pop('src', None)
         return inputs
 
-    def training_step(self, model: nn.Module, model_pretrain: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]], step) -> dict:
+    def training_step(self, model: nn.Module, model_pretrain: nn.Module, inputs: Dict[str, Union[torch.Tensor, Any]], step, kl_step) -> dict:
         model.train()
         model_pretrain.eval()
 
         inputs = self._prepare_inputs(inputs)
         ### sum of loss dividing micro-batch size, not batch size
 
-        loss = self.compute_loss(model, model_pretrain, inputs, step)  
+        loss = self.compute_loss(model, model_pretrain, inputs, step, kl_step)  
 
         ### sum of loss dividing batch size
         # scalar_loss = loss.mean(dim=0) / self.args.gradient_accumulation_steps 
@@ -776,15 +780,19 @@ class Trainer:
         extrace strcture tokens, and project to original tokens
         """
         ### preprocessor for different code format
-        code_snippets = code_snippets.split("\n\nAnswer: ```")[-1]
-        code_snippets = code_snippets.split("```")[0]
-        code_snippets = code_snippets.strip()
+        # pdb.set_trace()
+        if self.dataset_name == 'ise-uiuc/Magicoder-OSS-Instruct-75K':
+            code_snippets = code_snippets.split("\n\nAnswer: ```")[-1]
+            code_snippets = code_snippets.split("```")[0]
+            code_snippets = code_snippets.strip()
+            # pdb.set_trace()
 
         if not code_snippets:
             print("No valid code found after preprocessing.")
             return []
 
         try:
+            # pdb.set_trace()
             tree = ast.parse(code_snippets)
         except SyntaxError as e:
             # print(f"Syntax error in code: {e}")
@@ -877,7 +885,7 @@ class Trainer:
         else:
             return 0.0
 
-    def compute_loss(self, model, model_pretrain, inputs, step):
+    def compute_loss(self, model, model_pretrain, inputs, step, kl_step):
         labels = inputs.pop('labels')
         # stream = torch.cuda.Stream()  # you can place it into __init__
         # with torch.cuda.stream(stream):
@@ -886,7 +894,7 @@ class Trainer:
 
         # dp model forward
         outputs = model(**inputs)
-        
+
         # nodp model forward
         with torch.no_grad():
             outputs_gt = model_pretrain(**inputs)
@@ -902,24 +910,26 @@ class Trainer:
         seq_lens = (shift_labels != -100).sum(dim=1)
         loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels)
 
-        # if self.global_step > 50:
-        # compute kl div
-        logits_gt = outputs_gt.logits[..., :-1, :].contiguous()
-        dp_probs = F.log_softmax(shift_logits, dim=-1) 
-        non_dp_probs = F.softmax(logits_gt, dim=-1)
+        if self.global_step < kl_step:
+            # compute kl div
+            logits_gt = outputs_gt.logits[..., :-1, :].contiguous()
+            dp_probs = F.log_softmax(shift_logits, dim=-1) 
+            non_dp_probs = F.softmax(logits_gt, dim=-1)
 
-        # 提取每个样本的 input_ids 和结构性 tokens
-        batch_input_ids = inputs['input_ids']  # shape: [batch_size, seq_len]
-        batch_structural_tokens = [self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in batch_input_ids]
+            batch_input_ids = inputs['input_ids']  # shape: [batch_size, seq_len]
+            batch_structural_tokens = [self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in batch_input_ids]
 
-        kl_loss = self.compute_kl_loss(dp_probs, non_dp_probs, batch_input_ids, batch_structural_tokens, step)
+            kl_loss = self.compute_kl_loss(dp_probs, non_dp_probs, batch_input_ids, batch_structural_tokens, step)
 
-        # add kl loss to cross-entropy loss
-        total_loss = loss + self.lambda_kl * kl_loss
-        # pdb.set_trace()
-        return total_loss
-        # else:
-        #     return loss
+            if math.isnan(loss) or math.isnan(kl_loss):
+                pdb.set_trace()
+            print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}')
+            # add kl loss to cross-entropy loss
+            total_loss = loss + self.lambda_kl * kl_loss
+            # pdb.set_trace()
+            return total_loss
+        else:
+            return loss
 
     def is_local_master(self) -> bool:
         """

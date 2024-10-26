@@ -7,19 +7,20 @@ import subprocess
 import pdb
 
 
-gpus = ['3', '1', '2']
+gpus = ['0', '1']
 
 dp_epsilons = [10]
 # steps = [130]
-steps = [50, 60, 70]
+steps = [15]
 
-model = "deepseek-ai/deepseek-coder-6.7b-base"
-batch_size = 8
+model = "deepseek-ai/deepseek-coder-1.3b-instruct"
+# model = "deepseek-ai/deepseek-coder-6.7b-base"
+batch_size = 16
 
 is_pretrained = False   # run evalplus on pretrain model
 is_baseline = True
 
-max_workers = 20
+max_workers = 2
 
 
 def get_directories(path):
@@ -51,8 +52,12 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     '--is_pretrained'
                 ]
             elif is_baseline:
-                output_path = f"generate/evalplus/magicoder/dpsgd_baseline/samples_{model_name}_step{step}.jsonl"
-                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dpsgd_baseline_merged/checkpoint-{step}'
+                # output_path = f"generate/evalplus/magicoder/dpsgd_baseline/samples_{model_name}_step{step}.jsonl"
+                # checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dpsgd_baseline_merged/checkpoint-{step}'
+
+                
+                output_path = f"generate/evalplus/magicoder/step1/samples_{model_name}_dp{dp_epsilon}_step{step}.jsonl"
+                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step1/magicoder/{model_name}/dp{dp_epsilon}_lbs256/checkpoint-{step}'
                 arguments = [
                     '--checkpoint', model,
                     '--checkpoint_path', checkpoint_path,

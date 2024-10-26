@@ -1,11 +1,76 @@
-import torch
+import ast
+import subprocess
 
+def check_python_syntax(code_snippet):
+    try:
+        tree = ast.parse(code_snippet)
+        return True
+    except SyntaxError as e:
+        print(f"Python syntax error: {e}")
+        return False
 
-all_token_ids = [1551, 1070, 2995, 13391, 7, 87, 11, 320, 11, 284, 15, 11, 284, 17, 11, 273, 11, 1670, 21904, 11, 1670, 458, 11, 1371, 72, 62, 9618, 11, 6285, 62, 4779, 11, 427, 1772, 3552, 1551, 26230, 62, 2486, 7, 87, 11, 320, 11, 284, 15, 11, 284, 17, 11, 273, 11, 6285, 62, 4779, 1772, 3552, 1551, 26230, 62, 81, 7, 87, 11, 320, 11, 21548, 11, 284, 15, 11, 284, 17, 11, 273, 1772, 3552, 1551, 26230, 62, 8457, 7, 81, 1772, 3552, 1551, 26230, 62, 89, 458, 62, 89, 21904, 7, 89, 458, 11, 1670, 21904, 11, 1848, 1772, 3552, 1551, 26230, 62, 3132, 62, 9618, 7, 87, 11, 320, 11, 21548, 11, 284, 15, 11, 284, 17, 11, 273, 11, 1848, 1772, 3552]
+def check_java_syntax(code_snippet):
+    try:
+        # 将代码保存到临时文件
+        with open("temp.java", "w") as f:
+            f.write(code_snippet)
+        # 使用 javac 编译 Java 代码
+        subprocess.run(["javac", "temp.java"], check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"Java syntax error: {e}")
+        return False
 
+def check_cpp_syntax(code_snippet):
+    try:
+        # 将代码保存到临时文件
+        with open("temp.cpp", "w") as f:
+            f.write(code_snippet)
+        # 使用 g++ 编译 C++ 代码
+        subprocess.run(["g++", "-fsyntax-only", "temp.cpp"], check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"C++ syntax error: {e}")
+        return False
 
+def check_syntax(language, code_snippet):
+    if language == "python":
+        return check_python_syntax(code_snippet)
+    elif language == "java":
+        return check_java_syntax(code_snippet)
+    elif language == "cpp":
+        return check_cpp_syntax(code_snippet)
+    else:
+        print("Unsupported language")
+        return False
 
-# 将 all_token_ids 转为 tensor
-all_token_ids_tensor = torch.tensor(all_token_ids, device='cuda')  # 确保在同一设备上
+# 示例用法
+# code_snippets = """
+# def my_function():
+#     print("Hello, world!")
+# """
 
-print(all_token_ids_tensor)
+# if check_syntax("python", code_snippets):
+#     print("Python code is valid.")
+
+java_code = """
+public class HelloWorld {
+    public static void main(String[] args) {
+        System.out.println("Hello, world!");
+    }
+}
+"""
+
+if check_syntax("java", java_code):
+    print("Java code is valid.")
+
+# cpp_code = """
+# #include <iostream>
+# int main() {
+#     std::cout << "Hello, world!" << std::endl;
+#     return 0;
+# }
+# """
+
+# if check_syntax("cpp", cpp_code):
+#     print("C++ code is valid.")
