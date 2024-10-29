@@ -1,0 +1,11 @@
+{
+    "dataset": "humaneval",
+    "results": {
+        "base_tests": {
+            "pass@1": 0.3231707317073171
+        },
+        "plus_tests": {
+            "pass@1": 0.2682926829268293
+        }
+    }
+}

@@ -4,17 +4,21 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
-# MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-instruct"
-MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
+# MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+# MODEL_PATH="bigcode/starcoder2-15b"
+# MODEL_PATH="bigcode/starcoder2-3b"
+# MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
+# MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
 MAX_STEPS=0
-BATCH_SIZE=2
+BATCH_SIZE=8
 GRAD_ACCUM_STEPS=16
 
-LAMBDA=0.05
-KL_STEP=5
+LAMBDA=0.1
+KL_STEP=40
 
 # DP settings
 TARGET_EPSILON=10

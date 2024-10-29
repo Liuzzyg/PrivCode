@@ -259,7 +259,8 @@ def batch_GEN_SOLUTION(
 
     formatted_prompts = [prompts[i: i + batch_size] for i in range(0, len(prompts), batch_size)]
     all_solutions = []
-
+    
+    tokenizer.pad_token = tokenizer.eos_token
     inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(device)
     generation_config = {
         "do_sample": False,

@@ -18,7 +18,7 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
 
-from trainer_deepspeed import Trainer
+from trainer_deepspeed_dpbaseline import Trainer
 from compiled_args import (PrivacyArguments, TrainingArguments)
 from deepspeed.ops.adam import DeepSpeedCPUAdam
 
@@ -43,17 +43,9 @@ def get_args():
     # # # magicoder oss instruct data
     parser.add_argument("--input_column_name", type=str, default="problem")
     parser.add_argument("--output_column_name", type=str, default="solution")
-    # # # # alpaca
-    # parser.add_argument("--input_column_name", type=str, default="prompt")
-    # parser.add_argument("--output_column_name", type=str, default="completion")
-    # # starcoderdata
-    # parser.add_argument("--column_name", type=str, default="content")
-    # parser.add_argument("--input_column_name", type=str, default="Problem")
-    # parser.add_argument("--output_column_name", type=str, default="Solution")
-
     parser.add_argument("--seq_length", type=int, default=1024)
     parser.add_argument("--max_steps", type=int, default=0)
-    parser.add_argument("--epochs", type=int, default=10)
+    parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=16)
 
@@ -140,7 +132,6 @@ def print_trainable_parameters(model):
         f"trainable params: {trainable_params} || all params: {all_param} || trainable%: {100 * trainable_params / all_param}"
     )
 
-# alpaca
 def prepare_sample_text(examples, input_column_name="prompt", output_column_name="completion"):
     """Prepare the text from a sample of the dataset."""
     texts = []
@@ -150,15 +141,27 @@ def prepare_sample_text(examples, input_column_name="prompt", output_column_name
         texts.append(text)
     return texts
 
-# # starcoderdata
-# def prepare_sample_text(example, column_name="content"):  # input_column_name="prompt", output_column_name="completion"): # alpaca
+def prepare_sample_text_pii(examples):
+    """Prepare the text from a sample of the dataset."""
+    texts = []
+    for text in examples['text']:
+        # pdb.set_trace()
+        texts.append(text)
+    return texts
+
+
+# def prepare_sample_text(examples, input_column_name="prompt", output_column_name="completion"):
 #     """Prepare the text from a sample of the dataset."""
-#     text = example[column_name]
-#     return text
+#     texts = []
+#     for prompt, completion in zip(examples[input_column_name], examples[output_column_name]):
+#         # pdb.set_trace()
+#         text = f"API: Numpy\n\nAnswer: {completion}"
+#         texts.append(text)
+#     return texts
 
 
 def create_datasets(tokenizer, args):
-    if args.streaming:
+    if args.dataset_name == 'ise-uiuc/Magicoder-OSS-Instruct-75K':
         dataset = load_dataset(
             args.dataset_name,
             data_dir=args.subset,
@@ -166,73 +169,57 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
-
-        print("Loading the dataset in streaming mode")
-        valid_data = dataset.take(args.size_valid_set)
-        train_data = dataset.skip(args.size_valid_set)
-        train_data = train_data.shuffle(buffer_size=args.shuffle_buffer, seed=args.seed)
-    else:
-        # # alpaca
-        # dataset = load_dataset(
-        #     args.dataset_name,
-        #     data_dir=args.subset,
-        #     split=args.split,
-        #     use_auth_token=True,
-        #     num_proc=args.num_workers if not args.streaming else None,
-        #     streaming=args.streaming,
-        #     # cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
-        # )
-        # train_data = dataset["train"]
-        # valid_data = dataset["test"]
-        
-
-        # starcoderdata
-        # features = Features({
-        #     "content": Value(dtype="string")
-        # })
-
-        # synthetic
-        dataset = load_dataset(
-            "json", 
-            data_files=args.dataset_name,
-            split=args.split,
-            # features=features
-        )
-        
         # only train split
-        dataset = dataset.train_test_split(train_size=0.95, seed=args.seed)
+        dataset = dataset.train_test_split(test_size=0.74, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
 
-        print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
-        # pdb.set_trace()
+        args.input_column_name = "problem"
+        args.output_column_name = "solution"
 
-    # chars_per_token = chars_token_ratio(train_data, tokenizer, args.input_column_name, args.output_column_name)#args.column_name)    # args.input_column_name, args.output_column_name) # alpaca 
-    # print(f"The character to token ratio of the dataset is: {chars_per_token:.2f}")
+    elif args.dataset_name == 'data/oss_instruction/valid_processed_instruction_data_25k.jsonl':
+        # synthetic private api numpy
+        dataset = load_dataset(
+            "json", 
+            data_files=args.dataset_name,
+            split=args.split
+        )
+        dataset = dataset.train_test_split(train_size=0.74, seed=args.seed)
+        train_data = dataset['train']
+        valid_data = dataset['test']
+        
+        args.input_column_name = "Problem"
+        args.output_column_name = "Solution"
+        
+    # elif args.dataset_name == 'pii_leaks_eval/pii_dataset/pii_dataset.jsonl':
+    #     dataset = load_dataset(
+    #         "json", 
+    #         data_files=args.dataset_name,
+    #         split=args.split
+    #     )
+    elif args.dataset_name == 'terryyz/pii':
+        dataset = load_dataset(
+            args.dataset_name,
+            split='test',
+            use_auth_token=True,
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+        )
+        # only train split
+        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
+        train_data = dataset['train']
+        valid_data = dataset['test']
 
-    # train_dataset = ConstantLengthDataset(
-    #     tokenizer,
-    #     train_data,
-    #     infinite=True,
-    #     seq_length=args.seq_length,
-    #     chars_per_token=chars_per_token,
-    #     input_column_name=args.input_column_name,
-    #     output_column_name=args.output_column_name
-    # )
-    # valid_dataset = ConstantLengthDataset(
-    #     tokenizer,
-    #     valid_data,
-    #     infinite=False,
-    #     seq_length=args.seq_length,
-    #     chars_per_token=chars_per_token,
-    #     input_column_name=args.input_column_name,
-    #     output_column_name=args.output_column_name
-    # )
+    print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
+    # pdb.set_trace()
 
     def preprocess_function(examples):
-        # pdb.set_trace()
-        buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
+        # if args.dataset_name == 'pii_leaks_eval/pii_dataset/pii_dataset.jsonl':
+        if args.dataset_name == 'terryyz/pii':
+            buffer = prepare_sample_text_pii(examples)
+        else:
+            buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
         
         tokenized_inputs = tokenizer(buffer, truncation=False)
         
@@ -311,9 +298,9 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
             "self_attn.k_proj", 
             "self_attn.v_proj", 
             "self_attn.o_proj",
-            # "mlp.gate_proj", 
-            # "mlp.up_proj", 
-            # "mlp.down_proj"
+            "mlp.gate_proj", 
+            "mlp.up_proj", 
+            "mlp.down_proj"
         ]  # codeqwen  deepseek-coder  starcoder
         # target_modules = ["qkv_proj"]   # Phi-3.5-mini
     )
@@ -361,7 +348,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         report_to="wandb",
         ddp_find_unused_parameters=False,
         disable_tqdm=False,
-        deepspeed_config=args.deepspeed_config,
+        deepspeed_config=args.deepspeed_config
     )
 
     privacy_args = PrivacyArguments(
@@ -371,30 +358,47 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         non_private=args.non_private,
         clipping_mode=args.clipping_mode 
     )
-    
-    # if not args.multi_gpus:
-    #     torch.distributed.init_process_group(backend='nccl')
 
-    # Hacky way to set noise_multiplier.
-    privacy_engine = PrivacyEngine(
-        module=model,
-        batch_size=args.logical_batch_size,
-        sample_size=total_train_data_length,
-        epochs=training_args.num_train_epochs,
-        max_grad_norm=privacy_args.per_example_max_grad_norm,
-        noise_multiplier=privacy_args.noise_multiplier,
-        target_epsilon=privacy_args.target_epsilon,
-        target_delta=privacy_args.target_delta,
-        non_private=privacy_args.non_private,
-        accounting_mode=privacy_args.accounting_mode,
-        clipping_mode=privacy_args.clipping_mode,
-        clipping_fn=privacy_args.clipping_fn,
-        clipping_style='layer-wise',
-        # clipping_style=privacy_args.clipping_style,
-        # origin_params=origin_params,
-        num_GPUs=num_GPUs,
-        torch_seed_is_fixed=True,
-    )
+    if 'stage1' in args.deepspeed_config:
+        privacy_engine = PrivacyEngine(
+            module=model,
+            batch_size=args.logical_batch_size,
+            sample_size=total_train_data_length,
+            epochs=training_args.num_train_epochs,
+            max_grad_norm=privacy_args.per_example_max_grad_norm,
+            noise_multiplier=privacy_args.noise_multiplier,
+            target_epsilon=privacy_args.target_epsilon,
+            target_delta=privacy_args.target_delta,
+            non_private=privacy_args.non_private,
+            accounting_mode=privacy_args.accounting_mode,
+            clipping_mode=privacy_args.clipping_mode,
+            clipping_fn=privacy_args.clipping_fn,
+            clipping_style='layer-wise',
+            # clipping_style=privacy_args.clipping_style,
+            # origin_params=origin_params,
+            num_GPUs=num_GPUs,
+            torch_seed_is_fixed=True,
+        )
+    else:        
+        privacy_engine = PrivacyEngine_Distributed_Stage_2_and_3(
+            module=model,
+            batch_size=args.logical_batch_size,
+            sample_size=total_train_data_length,
+            epochs=training_args.num_train_epochs,
+            max_grad_norm=privacy_args.per_example_max_grad_norm,
+            noise_multiplier=privacy_args.noise_multiplier,
+            target_epsilon=privacy_args.target_epsilon,
+            target_delta=privacy_args.target_delta,
+            non_private=privacy_args.non_private,
+            accounting_mode=privacy_args.accounting_mode,
+            clipping_mode=privacy_args.clipping_mode,
+            clipping_fn=privacy_args.clipping_fn,
+            clipping_style='layer-wise',
+            # clipping_style=privacy_args.clipping_style,
+            # origin_params=origin_params,
+            num_GPUs=num_GPUs,
+            torch_seed_is_fixed=True,
+        )
 
     # Originally, these could have been null.
     privacy_args.noise_multiplier = privacy_engine.noise_multiplier
@@ -414,7 +418,6 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # Initialize the optimizer
     params = model.parameters()
 
-    # if not training_args.deepspeed_config:
     optimizer = torch.optim.AdamW(
         params=params,
         lr=training_args.learning_rate,
@@ -448,5 +451,5 @@ if __name__ == "__main__":
     os.makedirs(args.output_dir, exist_ok=True)
 
     logging.set_verbosity_error()
-    
+
     main(args)
