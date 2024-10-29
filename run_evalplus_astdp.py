@@ -13,7 +13,7 @@ gpus = ['0', '1', '2', '3']
 dp_epsilons = [10]
 lambda_kl = [0.05]
 kl_step = 5
-steps = [150, 160, 175, 185]
+steps = [210, 220, 230, 240]
 # steps = [65]
 
 model = "deepseek-ai/deepseek-coder-6.7b-base"

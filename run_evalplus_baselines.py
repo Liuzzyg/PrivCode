@@ -7,18 +7,19 @@ import subprocess
 import pdb
 
 
-gpus = ['0', '1']
+gpus = ['7', '1']
 
 dp_epsilons = [10]
 # steps = [130]
 steps = [15]
 
-model = "deepseek-ai/deepseek-coder-1.3b-instruct"
+# model = "bigcode/starcoder2-3b"
+model = "deepseek-ai/deepseek-coder-1.3b-base"
 # model = "deepseek-ai/deepseek-coder-6.7b-base"
 batch_size = 16
 
-is_pretrained = False   # run evalplus on pretrain model
-is_baseline = True
+is_pretrained = True   # run evalplus on pretrain model
+is_baseline = False
 
 max_workers = 2
 
