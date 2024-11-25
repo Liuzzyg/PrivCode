@@ -1,1 +1,0 @@
-python data/private_syn/exe_clean_data.py --model Qwen/Qwen2.5-Coder-1.5B
