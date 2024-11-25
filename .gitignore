@@ -4,3 +4,4 @@
 # data/oss_instruction/starcoderdata_numpy_subset25k.jsonl
 # data/private_syn/deepseek-coder-1.3b-instruct_private_syndata_55k_dp10.jsonl
 /p/fzv6enresearch/liuzheng/dpcode/data
+/p/fzv6enresearch/liuzheng/dpcode/bigcode-evaluation-harness
