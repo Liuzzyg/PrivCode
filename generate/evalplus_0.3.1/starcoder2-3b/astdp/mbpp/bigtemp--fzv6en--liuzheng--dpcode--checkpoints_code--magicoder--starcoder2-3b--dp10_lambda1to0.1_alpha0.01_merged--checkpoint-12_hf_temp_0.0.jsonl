@@ -1,0 +1,26 @@
+{"task_id": "Mbpp/2", "solution": "\"\"\"\nReturn a set of elements that are present in both the given lists.\n\"\"\"\nreturn set(list1).intersection(set(list2))"}
+{"task_id": "Mbpp/3", "solution": "\"\"\"\nReturns True if n is not a prime number, False otherwise.\n\"\"\""}
+{"task_id": "Mbpp/4", "solution": "def"}
+{"task_id": "Mbpp/6", "solution": "\"\"\"\nWrite a python function to check whether the two numbers differ at one bit position only or not.\nassert differ_At_One_Bit_Pos(13,9) == True\n\"\"\"\n\n# convert both numbers to binary strings\nnum1_bin = bin(num1)[2:]\nnum2_bin = bin(num2)[2:]\n\n# find the position of the first bit that differs"}
+{"task_id": "Mbpp/7", "solution": "\"\"\"\nWrite a function to find all words which are at least 4 characters long in a string.\nassert set(find_char_long('Please move back to stream')) == set(['Please','move', 'back','stream'])\n\"\"\"\nreturn [word for word in string.split() if len(word) >= 4]"}
+{"task_id": "Mbpp/8", "solution": "def"}
+{"task_id": "Mbpp/9", "solution": "\"\"\"\nWrite a python function to find the minimum number of rotations (greater than 0) required to get the same string.\nassert find_Rotations(\"aaaa\") == 1\n\"\"\"\n\n# Write your code here\n\nreturn 0"}
+{"task_id": "Mbpp/11", "solution": "\"\"\"\nWrite a python function to remove first and last occurrence of a given character from the string.\nassert remove_Occ(\"hello\",\"l\") == \"heo\"\n\"\"\""}
+{"task_id": "Mbpp/12", "solution": "def"}
+{"task_id": "Mbpp/14", "solution": "\"\"\"\nFind the volume of a triangular prism.\n\"\"\"\nreturn (a*b*c)/3"}
+{"task_id": "Mbpp/16", "solution": "def text_lowercase_underscore(text):"}
+{"task_id": "Mbpp/17", "solution": "def square_perimeter(side):"}
+{"task_id": "Mbpp/18", "solution": "\"\"\"\nWrite a function to remove characters from the first string which are present in the second string.\nassert remove_dirty_chars(\"probasscurve\", \"pros\") == 'bacuve'\n\"\"\"\nreturn ''.join(c for c in dirty if c not in clean)"}
+{"task_id": "Mbpp/19", "solution": "\"\"\"\nWrite a function to find whether a given array of integers contains any duplicate element.\nassert test_duplicate(([1,2,3,4,5]))==False\n\"\"\"\nreturn len(arr)!= len(set(arr))"}
+{"task_id": "Mbpp/20", "solution": "\"\"\"\nWrite a function to check if the given number is woodball or not.\nassert is_woodall(383) == True\n\"\"\""}
+{"task_id": "Mbpp/56", "solution": "\"\"\"\nWrite a python function to check if a given number is one less than twice its reverse.\nassert check(70) == False\n\"\"\"\nreturn n == 2 * int(str(n)[::-1]) - 1"}
+{"task_id": "Mbpp/57", "solution": "\"\"\"\nWrite a python function to find the largest number that can be formed with the given list of digits.\nassert find_Max_Num([1,2,3]) == 321\n\"\"\"\ndigits.sort(reverse=True)\nreturn int(\"\".join(map(str, digits)))"}
+{"task_id": "Mbpp/58", "solution": "def opposite_Signs(a,b):"}
+{"task_id": "Mbpp/59", "solution": "\"\"\"\nWrite a function to find the nth octagonal number.\nassert is_octagonal(5) == 65\n\"\"\"\nreturn n * (n + 1) * (2 * n + 1) // 6"}
+{"task_id": "Mbpp/61", "solution": "\"\"\"\nWrite a python function to count the number of substrings with the sum of digits equal to their length.\nassert count_Substrings('112112') == 6\n\"\"\"\n\n# initialize the count of substrings\ncount = 0\n\n# iterate over the substrings of the input string"}
+{"task_id": "Mbpp/62", "solution": "\"\"\"\nWrite a python function to find smallest number in a list.\nassert smallest_num([10, 20, 1, 45, 99]) == 1\n\"\"\"\nreturn min(nums)"}
+{"task_id": "Mbpp/63", "solution": "\"\"\"\nWrite a function to find the maximum difference between available pairs in the given tuple list.\nassert max_difference([(3, 5), (1, 7), (10, 3), (1, 2)]) == 7\n\"\"\"\nmax_diff = 0"}
+{"task_id": "Mbpp/64", "solution": "def"}
+{"task_id": "Mbpp/65", "solution": "def recursive_list_sum(lst):"}
+{"task_id": "Mbpp/66", "solution": "\"\"\"\nWrite a python function to count the number of positive numbers in a list.\nassert pos_count([1,-2,3,-4]) == 2\n\"\"\"\nreturn len([num for num in nums if num > 0])"}
+{"task_id": "Mbpp/67", "solution": "\"\"\"\nWrite a function to find the number of ways to partition a set of Bell numbers.\nassert bell_number(2)==2\n\"\"\""}

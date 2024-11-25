@@ -65,7 +65,9 @@ def clean_data_with_language(input_file, output_file):
                 
                 if len(cleaned_solution) > 1400:
                     continue
-
+                
+                # pdb.set_trace()
+            
                 # Use the hash map to find the matched language
                 matched_language = problem_language_map.get(problem.strip().lower(), 'unknown')
 
@@ -106,8 +108,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     model = args.model.split("/")[-1]
-    input_file = f'data/private_syn/{model}_private_syndata_55k_dp10.jsonl'
-    output_file = f'data/private_syn/{model}_cleaned_private_syndata.jsonl'
+    input_file = f'data/private_syn/{model}/private_syndata_55k_dp10.jsonl'
+    output_file = f'data/private_syn/{model}/cleaned_private_syndata.jsonl'
     clean_data_with_language(input_file, output_file)
 
     print(f"Data cleaning and filtering completed. Cleaned data with language saved to {output_file}.")

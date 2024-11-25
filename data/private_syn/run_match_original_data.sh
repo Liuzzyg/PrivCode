@@ -1,1 +1,1 @@
-python data/private_syn/match_original_data.py --model deepseek-ai/deepseek-coder-1.3b-instruct
+python data/private_syn/match_original_data.py --model Qwen/Qwen2.5-Coder-1.5B

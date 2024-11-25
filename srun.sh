@@ -5,9 +5,11 @@
 #SBATCH -t 1-00:00:00
 #SBATCH -p gpu --gres=gpu:1
 #SBATCH -n 1
-
-export PYTHONPATH=/u/fzv6en/anaconda3/envs/dpcode_test/bin/python
+#SBATCH -w jaguar01
 
 nvidia-smi
 
-$PYTHONPATH train_latent_classifier.py
+conda activate dpcode_test
+cd /p/fzv6enresearch/liuzheng/dpcode
+
+bash run_finetune_astdp.sh

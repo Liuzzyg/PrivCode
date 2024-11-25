@@ -16,6 +16,8 @@ def load_jsonl(input_path):
 
 # Function to save jsonl data
 def save_jsonl(output_path, data):
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     with open(output_path, 'w', encoding='utf-8') as f:
         for entry in data:
             f.write(json.dumps(entry, ensure_ascii=False) + '\n')
@@ -97,7 +99,7 @@ def main(args, model):
         pbar.update(len(batch_samples))
 
     # Save the generated solutions
-    save_jsonl(f'data/private_syn/{model}_private_syndata_55k_dp{args.target_epsilon}.jsonl', all_results)
+    save_jsonl(f'data/private_syn/{model}/private_syndata_55k_dp{args.target_epsilon}.jsonl', all_results)
 
     # Close the progress bar
     pbar.close()
@@ -106,7 +108,8 @@ def main(args, model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # parser.add_argument("--model_path", type=str, default="microsoft/Phi-3.5-mini-instruct")
-    parser.add_argument("--model_path", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct")
+    parser.add_argument("--model", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct")
+    parser.add_argument("--ckpt", type=str, default="ise-uiuc/Magicoder-OSS-Instruct-75K")
     parser.add_argument("--dataset_name", type=str, default="ise-uiuc/Magicoder-OSS-Instruct-75K")
 
     parser.add_argument("--seed", type=int, default=42)
@@ -123,10 +126,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    model = args.model_path.split("/")[-1]
-    base_path = '/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step1/magicoder'
+    model = args.model.split("/")[-1]
 
-    ckpt = os.path.join(base_path, f'{model}/dp{args.target_epsilon}/checkpoint-{args.step}')
+    ckpt = args.ckpt
     print(ckpt)
 
     main(args, model)

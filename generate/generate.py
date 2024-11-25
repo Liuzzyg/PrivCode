@@ -262,6 +262,12 @@ def batch_GEN_SOLUTION(
     
     tokenizer.pad_token = tokenizer.eos_token
     inputs = tokenizer(prompts, return_tensors="pt", padding=True, truncation=True).to(device)
+    # generation_config = {
+    #     # "do_sample": False,
+    #     "max_new_tokens": 512,
+    #     "temperature": 1e-2,
+    #     "repetition_penalty": 1
+    # }
     generation_config = {
         "do_sample": False,
         "max_new_tokens": 512,

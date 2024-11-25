@@ -62,8 +62,8 @@ def main(args):
     model = args.model.split("/")[-1]
 
     # File paths
-    local_data_file = f'data/private_syn/{model}_cleaned_private_syndata.jsonl'  # Path to your cleaned local data
-    output_file = f'data/private_syn/{model}_original_data.jsonl'  # Path to save the matched raw data
+    local_data_file = f'data/private_syn/{model}/cleaned_private_syndata.jsonl'  # Path to your cleaned local data
+    output_file = f'data/private_syn/{model}/original_data.jsonl'  # Path to save the matched raw data
 
     # Perform matching and saving
     match_and_save_data(original_data, local_data_file, output_file)

@@ -1,3 +1,15 @@
-jaguar01 klstep20
-jaguar04 klstep30
-groupml02 klstep40
+jaguar04
+        starcoder2-7b/dpinf_baseline
+jaguar01
+        ds-coder-6.7b/dpinf_baseline
+jaguar03
+        eval starcoder2-7b/astdp
+sds01
+        eval starcoder2-3b/dpinf
+
+
+
+        
+sds02
+        eval all pretrain models
+puma02

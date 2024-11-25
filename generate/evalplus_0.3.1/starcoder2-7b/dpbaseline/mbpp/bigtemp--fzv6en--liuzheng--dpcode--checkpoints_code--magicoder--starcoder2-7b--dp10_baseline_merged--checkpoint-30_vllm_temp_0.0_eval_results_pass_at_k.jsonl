@@ -1,0 +1,11 @@
+{
+    "dataset": "mbpp",
+    "results": {
+        "base_tests": {
+            "pass@1": 0.3333333333333333
+        },
+        "plus_tests": {
+            "pass@1": 0.2857142857142857
+        }
+    }
+}

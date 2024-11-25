@@ -75,8 +75,11 @@ def get_args():
     parser.add_argument("--save_freq", default=5, type=int)
     parser.add_argument("--save_freq_epoch", default=1, type=int)
 
-    parser.add_argument("--lambda_kl", type=float, default=0.1)
-    parser.add_argument("--kl_step", type=int, default=5)
+    parser.add_argument("--lambda_kl", type=float, default=None)
+    parser.add_argument("--kl_step", type=int, default=None)
+    parser.add_argument("--alpha", type=float, default=0.1)
+    parser.add_argument("--min_lambda_kl", type=float, default=0.1)
+    parser.add_argument("--max_lambda_kl", type=float, default=0.1)
 
     # DP
     parser.add_argument("--logical_batch_size", type=int, default=256)
@@ -433,7 +436,10 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         eval_dataset=val_data,
         lambda_kl=args.lambda_kl,
         dataset_name=args.dataset_name,
-        kl_step=args.kl_step
+        kl_step=args.kl_step,
+        alpha=args.alpha,
+        min_lambda_kl=args.min_lambda_kl,
+        max_lambda_kl=args.max_lambda_kl,
         )
 
 

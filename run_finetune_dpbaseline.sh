@@ -7,7 +7,10 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
 # MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="bigcode/starcoder2-3b"
+# MODEL_PATH="bigcode/starcoder2-7b"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
+# MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
+
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
@@ -16,7 +19,7 @@ BATCH_SIZE=8
 GRAD_ACCUM_STEPS=16
 
 # DP settings
-TARGET_EPSILON=10
+TARGET_EPSILON=5
 NON_PRIVATE="no"  # Set to "y" for non-private training
 # NON_PRIVATE="y"
 
