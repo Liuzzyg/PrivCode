@@ -2,33 +2,33 @@
 
 # Define parameters
 gpus=("4" "5" "6" "7")
-gpus=("0" "1" "2" "3")
-# gpus=("1" "2" "3" "4" "5" "6" "7")
+# gpus=("0" "1" "2" "3")
+# gpus=("0" "1" "2" "3" "4" "5" "6" "7")
 # gpus=("0" "1")
 # gpus=("0" "1" "2" )
 
-# MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
-MODEL_PATH="bigcode/starcoder2-3b"
-MODEL_PATH="bigcode/starcoder2-7b"
+MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+# MODEL_PATH="bigcode/starcoder2-3b"
+# MODEL_PATH="bigcode/starcoder2-7b"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
-MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
+# MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(1 5)
-# dp_epsilons=('inf')
+dp_epsilons=(1)
+# dp_epsilons=('inf' 10)
 
 # steps=(50 40 30 20 100 10)
-# steps=(40 50 80 100)
-steps=(950 800 600 400)
-steps=(120 100 80)
-steps=(50 60 70)
-steps=(1100 1300 1500 1700 1200 1400 1600 1000)
-steps=(25 50 75 100 150 160)
-# steps=(15)
+# steps=(950 800 600 400)
+# steps=(120 100 80)
+# steps=(50 60 70)
+# steps=(1100 1300 1500 1700 1200 1400 1600 1000)
+# steps=(600 700 900  1200  750)
+# steps=(110 90 130 160 170 190 180)
+steps=(50 200)
 
 # Static parameters
-output_root="generate/evalplus_0.3.1/${MODEL_NAME}/dpbaseline"
+output_root="generate/evalplus_0.3.1/${MODEL_NAME}/step2"
 datasets=("humaneval" "mbpp")
 # datasets=("mbpp")
 datasets=("humaneval")
@@ -50,10 +50,12 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
     for dataset in "${datasets[@]}"; do
       # Set the output path and checkpoint path based on current parameters
       # dp baseline
-      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
-      # 6.7 inf baseline
-      # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/original_data_merged/checkpoint-130"
-      
+      if [ "$dp_epsilon" == "inf" ]; then
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/${MODEL_NAME}/dp${dp_epsilon}_merged/checkpoint-${step}"
+      else
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+      fi
+
       # Define the command with parameters for evalplus.evaluate
       command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
         --model \"${checkpoint_path}\" \

@@ -108,6 +108,9 @@ class Trainer:
         lambda_kl: float = None,
         dataset_name: str = None,
         kl_step: int = None,
+        alpha: float = None,
+        min_lambda_kl: float = None,
+        max_lambda_kl: float = None,
         **kwargs,
     ):
         if args is None:
@@ -201,6 +204,9 @@ class Trainer:
         self.lambda_kl = lambda_kl
         self.dataset_name = dataset_name
         self.kl_step = kl_step
+        self.alpha = alpha
+        self.min_lambda_kl = min_lambda_kl
+        self.max_lambda_kl = max_lambda_kl
 
     def _remove_unused_columns(self, dataset: "datasets.Dataset", description: Optional[str] = None):
         if not self.args.remove_unused_columns:
@@ -910,26 +916,39 @@ class Trainer:
         seq_lens = (shift_labels != -100).sum(dim=1)
         loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels)
 
-        if self.global_step < kl_step:
-            # compute kl div
-            logits_gt = outputs_gt.logits[..., :-1, :].contiguous()
-            dp_probs = F.log_softmax(shift_logits, dim=-1) 
-            non_dp_probs = F.softmax(logits_gt, dim=-1)
+        step_interval = 20
 
-            batch_input_ids = inputs['input_ids']  # shape: [batch_size, seq_len]
-            batch_structural_tokens = [self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in batch_input_ids]
+        def compute_lambda_kl(step):
+            # Calculate the equivalent continuous decay value for the current interval
+            effective_step = (step // step_interval) * step_interval  # Round down to nearest interval
+            lambda_kl = self.min_lambda_kl + (self.max_lambda_kl - self.min_lambda_kl) * math.exp(-self.alpha * effective_step)
+            return lambda_kl
+        
+        lambda_kl = compute_lambda_kl(step)
+        # pdb.set_trace()
 
-            kl_loss = self.compute_kl_loss(dp_probs, non_dp_probs, batch_input_ids, batch_structural_tokens, step)
+        # if self.global_step < kl_step:
+        # compute kl div
+        logits_gt = outputs_gt.logits[..., :-1, :].contiguous()
+        dp_probs = F.log_softmax(shift_logits, dim=-1) 
+        non_dp_probs = F.softmax(logits_gt, dim=-1)
 
-            if math.isnan(loss) or math.isnan(kl_loss):
-                pdb.set_trace()
-            print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}')
-            # add kl loss to cross-entropy loss
-            total_loss = loss + self.lambda_kl * kl_loss
-            # pdb.set_trace()
-            return total_loss
-        else:
-            return loss
+        batch_input_ids = inputs['input_ids']  # shape: [batch_size, seq_len]
+        batch_structural_tokens = [self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in batch_input_ids]
+
+        kl_loss = self.compute_kl_loss(dp_probs, non_dp_probs, batch_input_ids, batch_structural_tokens, step)
+
+        if math.isnan(loss) or math.isnan(kl_loss):
+            pdb.set_trace()
+        # print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}')
+        print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}, lambda_kl is {lambda_kl}')
+        # add kl loss to cross-entropy loss
+        # total_loss = loss + self.lambda_kl * kl_loss
+        total_loss = loss + lambda_kl * kl_loss
+        # pdb.set_trace()
+        return total_loss
+        # else:
+        #     return loss
 
     def is_local_master(self) -> bool:
         """

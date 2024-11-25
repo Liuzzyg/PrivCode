@@ -7,21 +7,29 @@ import subprocess
 import pdb
 
 
-gpus = ['7', '1']
+gpus = ['4', '5']
+gpus = ['0', '1', '2', '3']
 
 dp_epsilons = [10]
-# steps = [130]
-steps = [15]
+# dp_epsilons = ['inf']
+# steps = [12]
+# steps = [65]
+# steps = [80, 100]
+steps = [15, 16]
+# steps = [30, 40, 50, 60, 35, 45, 55]
 
-# model = "bigcode/starcoder2-3b"
-model = "deepseek-ai/deepseek-coder-1.3b-base"
+model = "bigcode/starcoder2-7b"
+model = "bigcode/starcoder2-3b"
+# model = "deepseek-ai/deepseek-coder-1.3b-base"
 # model = "deepseek-ai/deepseek-coder-6.7b-base"
 batch_size = 16
 
-is_pretrained = True   # run evalplus on pretrain model
-is_baseline = False
+dataset = "mbpp"
 
-max_workers = 2
+is_pretrained = False   # run evalplus on pretrain model
+is_baseline = True
+
+max_workers = 4
 
 
 def get_directories(path):
@@ -43,28 +51,27 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             # pdb.set_trace()
             model_name = model.split("/")[-1]
             if is_pretrained:
-                output_path = f"generate/evalplus/pretrained_model/samples_{model_name}.jsonl"
+                output_path = f"generate/evalplus/magicoder/{model_name}/pretrain/{dataset}/samples.jsonl"
                 checkpoint_path = None
                 arguments = [
                     '--checkpoint', model,
                     '--checkpoint_path', checkpoint_path,
                     '--output_path', output_path,
                     '--batch_size', batch_size,
-                    '--is_pretrained'
+                    '--is_pretrained',
+                    '--dataset', dataset
                 ]
             elif is_baseline:
-                # output_path = f"generate/evalplus/magicoder/dpsgd_baseline/samples_{model_name}_step{step}.jsonl"
-                # checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/{model_name}/dpsgd_baseline_merged/checkpoint-{step}'
+                output_path = f"generate/evalplus/magicoder/{model_name}/dpbaseline/{dataset}/samples_dp{dp_epsilon}_step{step}.jsonl"
+                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
 
-                
-                output_path = f"generate/evalplus/magicoder/step1/samples_{model_name}_dp{dp_epsilon}_step{step}.jsonl"
-                checkpoint_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step1/magicoder/{model_name}/dp{dp_epsilon}_lbs256/checkpoint-{step}'
                 arguments = [
                     '--checkpoint', model,
                     '--checkpoint_path', checkpoint_path,
                     '--output_path', output_path,
                     '--batch_size', batch_size,
-                    '--is_baseline'
+                    '--is_baseline',
+                    '--dataset', dataset
                 ]
             else:
                 print("pls check your config!!!")

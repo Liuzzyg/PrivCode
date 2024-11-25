@@ -105,3 +105,9 @@ conda activate bigcodebench
 sh run_bigcodebench.sh
 ```
 You can adjust the script as needed by commenting unused command. Or you can leave this to me:)!
+
+
+
+## docker exeuate code clean
+docker run -it --entrypoint /bin/bash code-cleaner:latest
+bash data/private_syn/run_clean_data.sh

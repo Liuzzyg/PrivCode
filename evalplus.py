@@ -4,6 +4,7 @@ import argparse
 import pdb
 from typing import List, Dict
 
+from evalplus_copy.mbpp import get_mbpp_plus
 from evalplus_copy.humaneval import get_human_eval_plus
 from evalplus_copy.utils import write_jsonl
 
@@ -16,7 +17,10 @@ from generate.generate import GEN_SOLUTION, batch_GEN_SOLUTION
 
 
 def main(args):
-    problems = get_human_eval_plus()
+    if args.dataset == 'humaneval':
+        problems = get_human_eval_plus()
+    elif args.dataset == 'mbpp':
+        problems = get_mbpp_plus()
     prompts = [problem["prompt"] for problem in problems.values()]
     # pdb.set_trace()
     task_ids = list(problems.keys())
@@ -61,6 +65,7 @@ if __name__ == '__main__':
     # parser.add_argument('--is_post_step', action="store_true")
     parser.add_argument('--is_baseline', action="store_true")
 
+    parser.add_argument("--dataset", type=str, default="humaneval")
     args = parser.parse_args()
 
     main(args)
