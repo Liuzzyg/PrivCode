@@ -9,12 +9,15 @@ import pdb
 
 # gpus = ['2', '3', '4', '5']
 gpus = ['0', '1', '2', '3']
-# gpus = ['5', '6', '7']
-# gpus = ['3', '2']
-gpus = ['4', '5', '6', '7']
+# gpus = ['2', '3', '4', '5', '6', '7']
+# gpus = ['0', '1', '2']
+# gpus = ['2']
+# gpus = ['0', '1']
+# gpus = ['4', '5', '6', '7']
 
-dp_epsilons = [1]
-# dp_epsilons = ['inf']
+global_dp_epsilons = 4
+dp_epsilons = [4]
+dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
 
@@ -23,18 +26,23 @@ steps = [110, 90, 125, 130, 140, 160, 170, 190]
 # steps = [765, 755, 770, 790, 810, 840, 835, 830]
 # steps = [16, 20, 25, 28, 30, 32, 35, 50, 60, 64, 70, 80]
 # steps = [600, 700, 800, 900, 1000, 1200, 1300, 750]
-steps = [50, 200]
-# steps = [1100, 1300, 1500, 1700, 1200, 1400, 1600, 1000]
+steps = [200, 500, 750, 1000, 1500, 2000, 2500, 3000]
+steps = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+steps = [100, 200, 250, 400]#, 500]
+steps = [500]
+
 
 # base_model = "bigcode/starcoder2-3b"
-# base_model = "bigcode/starcoder2-7b"
+base_model = "bigcode/starcoder2-7b"
 # base_model = "Qwen/Qwen2.5-Coder-1.5B"
-# base_model = "Qwen/Qwen2.5-Coder-7B"
+base_model = "Qwen/Qwen2.5-Coder-7B"
 # base_model = "deepseek-ai/deepseek-coder-1.3b-base"
 base_model = "deepseek-ai/deepseek-coder-6.7b-base"
 
+is_baseline = False
+is_baseline = True
 
-max_workers = 8
+max_workers = 4
 
 
 def get_directories(path):
@@ -55,16 +63,25 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
         for step in steps:
             model_name = base_model.split("/")[-1]
             if dp_epsilon == 'inf':
-                peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/{model_name}/dpinf/checkpoint-{step}'
-                output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/{model_name}/dpinf_merged/checkpoint-{step}'
-                arguments = [
-                    '--base_model_name_or_path', base_model,
-                    '--peft_model_path', peft_model_path,
-                    '--save_merged_model_path', output_path,
-                    ]
+                if not is_baseline:
+                    peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/privsyn/checkpoint-{step}'
+                    output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/privsyn_merged/checkpoint-{step}'
+                    arguments = [
+                        '--base_model_name_or_path', base_model,
+                        '--peft_model_path', peft_model_path,
+                        '--save_merged_model_path', output_path,
+                        ]
+                else:
+                    peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/dpinf_baseline/checkpoint-{step}'
+                    output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/dpinf_baseline_merged/checkpoint-{step}'
+                    arguments = [
+                        '--base_model_name_or_path', base_model,
+                        '--peft_model_path', peft_model_path,
+                        '--save_merged_model_path', output_path,
+                        ]
             else:
-                peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
-                output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
+                peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/dp{dp_epsilon}_baseline/checkpoint-{step}'
+                output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/{model_name}_dp{global_dp_epsilons}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
                 arguments = [
                     '--base_model_name_or_path', base_model,
                     '--peft_model_path', peft_model_path,

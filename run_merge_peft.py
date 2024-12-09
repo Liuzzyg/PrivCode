@@ -8,12 +8,12 @@ import pdb
 
 
 # gpus = ['2', '3', '4', '5']
-gpus = ['0', '1', '2', '3']
+gpus = ['0', '1', '2', '3', '4', '5', '6', '7']
 # gpus = ['5', '6', '7']
 # gpus = ['0', '1', '2']
 # gpus = ['4', '5', '6', '7']
 
-dp_epsilons = [1, 5]
+dp_epsilons = [1, 4]
 # dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
@@ -35,20 +35,20 @@ steps = [110, 90, 125, 130, 140, 160, 170, 190]
 # steps = [16, 20, 25, 28, 30, 32, 35, 50, 60, 64, 70, 80]
 steps = [600, 700, 800, 900, 1000, 1200, 1300, 750]
 # steps = [600, 700, 900, 1200, 750]
-steps = [25, 50, 75, 100, 150, 160]
+steps = [15, 50, 100, 150]
 
-base_model = "bigcode/starcoder2-3b"
-base_model = "bigcode/starcoder2-7b"
-# base_model = "Qwen/Qwen2.5-Coder-1.5B"
+# base_model = "bigcode/starcoder2-3b"
+# base_model = "bigcode/starcoder2-7b"
+base_model = "Qwen/Qwen2.5-Coder-1.5B"
 # base_model = "Qwen/Qwen2.5-Coder-7B"
-base_model = "deepseek-ai/deepseek-coder-1.3b-base"
+# base_model = "deepseek-ai/deepseek-coder-1.3b-base"
 # base_model = "deepseek-ai/deepseek-coder-6.7b-base"
 
 
-is_baseline = True
-# is_baseline = False
+# is_baseline = True
+is_baseline = False
 
-max_workers = 4
+max_workers = 8
 
 
 def get_directories(path):
