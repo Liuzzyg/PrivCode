@@ -1,15 +1,9 @@
-jaguar04
-        starcoder2-7b/dpinf_baseline
-jaguar01
-        ds-coder-6.7b/dpinf_baseline
-jaguar03
-        eval starcoder2-7b/astdp
-sds01
-        eval starcoder2-3b/dpinf
-
-
-
-        
-sds02
-        eval all pretrain models
-puma02
+12.4
+· 回翻验证用另一个模型描述syntactic code，与original prompt做相似度对比
+· baseline:
+     1. original data: no clipping
+     2. synthetic data: clipping, epsilon=inf
+     3. dp0.2 dp8
+· 消融 3
+· 超参分析:
+     data size

@@ -4,18 +4,18 @@
 # gpus=("4" "5" "6" "7")
 # gpus=("0" "2" "3" "5" "4")
 # gpus=("2" "3" )
-gpus=("0" "1" "2" "3")
+gpus=("0" "1" "2" "3" "4" "5" "6" "7")
 # gpus=("1" )
 
 # MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 MODEL_PATH="bigcode/starcoder2-3b"
 MODEL_PATH="bigcode/starcoder2-7b"
 MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
-# MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
+MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(1 5)
+dp_epsilons=(1 4)
 
 # lambda_kl=(0.1)
 lambda_kl=(1000)
@@ -37,7 +37,7 @@ steps=(30 40 50 60)
 steps=(180 200)
 steps=(110 90 130 160 170 190 180)
 steps=(600 700 800 900 1000 1200 1300 750)
-steps=(25 50 75 100 150 160)
+steps=(15 50 100 150)
 
 # Static parameters
 output_root="generate/evalplus_0.3.1/${MODEL_NAME}/astdp"
@@ -50,7 +50,7 @@ tp=1
 greedy="--greedy"
 
 
-max_workers=4
+max_workers=8
 
 
 # Initialize GPU index and process counter

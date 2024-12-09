@@ -109,5 +109,9 @@ You can adjust the script as needed by commenting unused command. Or you can lea
 
 
 ## docker exeuate code clean
-docker run -it --entrypoint /bin/bash code-cleaner:latest
+```
+docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
+```
+```
 bash data/private_syn/run_clean_data.sh
+```

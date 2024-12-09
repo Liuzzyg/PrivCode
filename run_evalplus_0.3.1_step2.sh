@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Define parameters
-gpus=("4" "5" "6" "7")
-# gpus=("0" "1" "2" "3")
-# gpus=("0" "1" "2" "3" "4" "5" "6" "7")
-# gpus=("0" "1")
+# gpus=("4" "5" "6" "7")
+gpus=("2" "3")
+# gpus=("2" "3" "4" "5" "6" "7")
+gpus=("2")
 # gpus=("0" "1" "2" )
 
 MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
@@ -15,8 +15,9 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(1)
-# dp_epsilons=('inf' 10)
+global_dp_epsilon=4
+dp_epsilons=(4)
+dp_epsilons=('inf')
 
 # steps=(50 40 30 20 100 10)
 # steps=(950 800 600 400)
@@ -25,20 +26,27 @@ dp_epsilons=(1)
 # steps=(1100 1300 1500 1700 1200 1400 1600 1000)
 # steps=(600 700 900  1200  750)
 # steps=(110 90 130 160 170 190 180)
-steps=(50 200)
+steps=(100 200 500 750 1000 1500 2000)
+steps=(2000)
+# steps=(5 10 15 20 25 30 40 45 50)
+# steps=(5 10 15 20 25 30 35 40)
+steps=(500)
 
 # Static parameters
 output_root="generate/evalplus_0.3.1/${MODEL_NAME}/step2"
 datasets=("humaneval" "mbpp")
 # datasets=("mbpp")
-datasets=("humaneval")
+# datasets=("humaneval")
+
+is_baseline='yes'
+is_baseline='no'
 
 backend="vllm"
 # backend="hf"
 tp=1
 greedy="--greedy"
 
-max_workers=4
+max_workers=1
 
 # Initialize GPU index
 gpu_index=0
@@ -51,9 +59,13 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
       # Set the output path and checkpoint path based on current parameters
       # dp baseline
       if [ "$dp_epsilon" == "inf" ]; then
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/${MODEL_NAME}/dp${dp_epsilon}_merged/checkpoint-${step}"
+          if [ "$is_baseline" == "no" ]; then
+              checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/${MODEL_NAME}_dp${global_dp_epsilon}/privsyn_merged/checkpoint-${step}"
+          else 
+              checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/${MODEL_NAME}_dp${global_dp_epsilon}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+          fi
       else
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/${MODEL_NAME}_dp${global_dp_epsilon}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
       fi
 
       # Define the command with parameters for evalplus.evaluate
