@@ -1,21 +1,21 @@
 #!/bin/bash
 
 # Define parameters
-gpus=("4" "5" "6" "7")
-gpus=("0" "1" "2" "3")
-# gpus=("1" "2" "3" "4" "5" "6" "7")
+gpus=("6" "7")
+# gpus=("0" "1" "2" "3")
+gpus=("1" "2" "3" "4" "5" "6" "7")
 # gpus=("0" "1")
 # gpus=("0" "1" "2" )
 
 # MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 MODEL_PATH="bigcode/starcoder2-3b"
 MODEL_PATH="bigcode/starcoder2-7b"
-# MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
-MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
+MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
+# MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(1 5)
+dp_epsilons=(1)
 # dp_epsilons=('inf')
 
 # steps=(50 40 30 20 100 10)
@@ -24,7 +24,7 @@ steps=(950 800 600 400)
 steps=(120 100 80)
 steps=(50 60 70)
 steps=(1100 1300 1500 1700 1200 1400 1600 1000)
-steps=(25 50 75 100 150 160)
+steps=(100)
 # steps=(15)
 
 # Static parameters
@@ -38,7 +38,7 @@ backend="vllm"
 tp=1
 greedy="--greedy"
 
-max_workers=4
+max_workers=10
 
 # Initialize GPU index
 gpu_index=0
@@ -50,7 +50,7 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
     for dataset in "${datasets[@]}"; do
       # Set the output path and checkpoint path based on current parameters
       # dp baseline
-      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
       # 6.7 inf baseline
       # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/original_data_merged/checkpoint-130"
       

@@ -148,6 +148,7 @@ def prepare_sample_text(examples, input_column_name="prompt", output_column_name
         texts.append(text)
     return texts
 
+
 def prepare_sample_text_pii(examples):
     """Prepare the text from a sample of the dataset."""
     texts = []
@@ -227,9 +228,9 @@ def create_datasets(tokenizer, args):
             buffer = prepare_sample_text_pii(examples)
         else:
             buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
-        
-        tokenized_inputs = tokenizer(buffer, truncation=False)
-        
+
+        tokenized_data = tokenizer(buffer, truncation=False, padding=False, add_special_tokens=False)
+
         result = {
             "input_ids": [],
             "labels": [],
@@ -237,26 +238,43 @@ def create_datasets(tokenizer, args):
         }
 
         pad_token_id = tokenizer.eos_token_id
+        answer_marker = tokenizer.encode("Answer: ", add_special_tokens=False)
 
-        for input_ids in tokenized_inputs["input_ids"]:
-            input_ids += [tokenizer.eos_token_id]
+        for input_ids in tokenized_data["input_ids"]:
+            # Locate the split point between the prompt and completion
+            prompt_end_idx = input_ids.index(answer_marker[0]) + 1
+
+
+            # Generate labels
+            labels = [-100] * prompt_end_idx + input_ids[prompt_end_idx:]
             
+            # Add EOS token
+            input_ids.append(pad_token_id)
+            labels.append(pad_token_id)
+
+            # Create attention mask
             attention_mask = [1] * len(input_ids)
-            
+
+            # Split into chunks of args.seq_length
             for i in range(0, len(input_ids), args.seq_length):
                 seq = input_ids[i : i + args.seq_length]
+                lbl = labels[i : i + args.seq_length]
                 mask = attention_mask[i : i + args.seq_length]
 
+                # Handle padding for sequences shorter than args.seq_length
                 if len(seq) < args.seq_length:
-                    mask += [0] * (args.seq_length - len(seq))
-                    seq += [pad_token_id] * (args.seq_length - len(seq))
-                
+                    padding_length = args.seq_length - len(seq)
+                    seq += [pad_token_id] * padding_length
+                    lbl += [-100] * padding_length
+                    mask += [0] * padding_length
+
                 result["input_ids"].append(seq)
-                result["labels"].append(seq)
+                result["labels"].append(lbl)
                 result["attention_mask"].append(mask)
 
         return result
 
+    # Process train and validation datasets
     train_dataset = train_data.map(
         preprocess_function,
         batched=True,
@@ -271,7 +289,6 @@ def create_datasets(tokenizer, args):
         num_proc=args.num_workers
     )
 
-    # pdb.set_trace()
     return train_dataset, valid_dataset, len(train_data)
 
 

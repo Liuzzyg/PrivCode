@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Define parameters
-# gpus=("4" "5" "6" "7")
+gpus=("7" "5" "6" "7")
 # gpus=("0" "2" "3" "5" "4")
-# gpus=("2" "3" )
-gpus=("0" "1" "2" "3" "4" "5" "6" "7")
+gpus=( "3" )
+# gpus=("0" "1" "2" "3" "4" "5" "6" "7")
 # gpus=("1" )
 
 # MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
@@ -15,7 +15,7 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(1 4)
+dp_epsilons=(4)
 
 # lambda_kl=(0.1)
 lambda_kl=(1000)
@@ -37,7 +37,7 @@ steps=(30 40 50 60)
 steps=(180 200)
 steps=(110 90 130 160 170 190 180)
 steps=(600 700 800 900 1000 1200 1300 750)
-steps=(15 50 100 150)
+steps=(100 )
 
 # Static parameters
 output_root="generate/evalplus_0.3.1/${MODEL_NAME}/astdp"
@@ -68,7 +68,7 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
           # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
 
           # declined lambda
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
           
 
           # Define the command with parameters for evalplus.evaluate
