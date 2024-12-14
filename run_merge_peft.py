@@ -8,12 +8,12 @@ import pdb
 
 
 # gpus = ['2', '3', '4', '5']
-gpus = ['0', '1', '2', '3', '4', '5', '6', '7']
+gpus = ['7', '1', '2', '3', '4', '5', '6', '0']
 # gpus = ['5', '6', '7']
 # gpus = ['0', '1', '2']
-# gpus = ['4', '5', '6', '7']
+gpus = ['5', '7']
 
-dp_epsilons = [1, 4]
+dp_epsilons = [0.2]
 # dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
@@ -35,7 +35,7 @@ steps = [110, 90, 125, 130, 140, 160, 170, 190]
 # steps = [16, 20, 25, 28, 30, 32, 35, 50, 60, 64, 70, 80]
 steps = [600, 700, 800, 900, 1000, 1200, 1300, 750]
 # steps = [600, 700, 900, 1200, 750]
-steps = [15, 50, 100, 150]
+steps = [100]
 
 # base_model = "bigcode/starcoder2-3b"
 # base_model = "bigcode/starcoder2-7b"
@@ -45,10 +45,10 @@ base_model = "Qwen/Qwen2.5-Coder-1.5B"
 # base_model = "deepseek-ai/deepseek-coder-6.7b-base"
 
 
-# is_baseline = True
+is_baseline = True
 is_baseline = False
 
-max_workers = 8
+max_workers = 10
 
 
 def get_directories(path):
@@ -71,8 +71,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 for lambda_kl in lambda_kls:
                     model_name = base_model.split("/")[-1]
                     if is_baseline:
-                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
-                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
+                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
+                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
                         arguments = [
                             '--base_model_name_or_path', base_model,
                             '--peft_model_path', peft_model_path,
@@ -84,8 +84,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                         # output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lambda_kl}_klstep{kl_step}_merged/checkpoint-{step}"
 
                         # # decline
-                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
-                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
+                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
+                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
                         
                         arguments = [
                             '--base_model_name_or_path', base_model,

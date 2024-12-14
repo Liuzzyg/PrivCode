@@ -900,7 +900,7 @@ class Trainer:
         shift_logits = logits[..., :-1, :].contiguous()
         shift_labels = labels[..., 1:].contiguous()
         seq_lens = (shift_labels != -100).sum(dim=1)
-        loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels)
+        loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels, ignore_index=-100)
 
         return loss
 

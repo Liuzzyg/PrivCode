@@ -891,17 +891,14 @@ class Trainer:
         else:
             return 0.0
 
-    def compute_loss(self, model, model_pretrain, inputs, step, kl_step):
-        labels = inputs.pop('labels')
-        # stream = torch.cuda.Stream()  # you can place it into __init__
-        # with torch.cuda.stream(stream):
-        #     outputs = model(**inputs)
-        #     stream.synchronize()
 
-        # dp model forward
+    def compute_loss(self, model, model_pretrain, inputs, step, kl_step):
+        labels = inputs.pop('labels')  # Remove 'labels' from inputs
+
+        # Forward pass for dp model
         outputs = model(**inputs)
 
-        # nodp model forward
+        # Forward pass for nodp model (teacher model)
         with torch.no_grad():
             outputs_gt = model_pretrain(**inputs)
 
@@ -909,12 +906,16 @@ class Trainer:
         if self.args.past_index >= 0:
             self._past = outputs[self.args.past_index]
 
-        # dp model logits and labels, and compute cross-entropy loss
+        # dp model logits and labels, compute cross-entropy loss
         logits = outputs.logits
         shift_logits = logits[..., :-1, :].contiguous()
-        shift_labels = labels[..., 1:].contiguous()
+        shift_labels = labels[..., 1:].contiguous()  # Align logits and labels by one position
+
+        # Compute sequence lengths
         seq_lens = (shift_labels != -100).sum(dim=1)
-        loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels)
+
+        # Directly compute cross-entropy loss, ignoring -100 values in shift_labels
+        loss = F.cross_entropy(shift_logits.permute(0, 2, 1), shift_labels, ignore_index=-100)
 
         step_interval = 20
 
@@ -923,32 +924,33 @@ class Trainer:
             effective_step = (step // step_interval) * step_interval  # Round down to nearest interval
             lambda_kl = self.min_lambda_kl + (self.max_lambda_kl - self.min_lambda_kl) * math.exp(-self.alpha * effective_step)
             return lambda_kl
-        
+
         lambda_kl = compute_lambda_kl(step)
-        # pdb.set_trace()
 
         # if self.global_step < kl_step:
-        # compute kl div
+        # Compute KL divergence loss
         logits_gt = outputs_gt.logits[..., :-1, :].contiguous()
-        dp_probs = F.log_softmax(shift_logits, dim=-1) 
+        dp_probs = F.log_softmax(shift_logits, dim=-1)
         non_dp_probs = F.softmax(logits_gt, dim=-1)
 
         batch_input_ids = inputs['input_ids']  # shape: [batch_size, seq_len]
-        batch_structural_tokens = [self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True)) for ids in batch_input_ids]
+        batch_structural_tokens = [
+            self.extract_tokens_and_ast_structure(self.tokenizer.decode(ids, skip_special_tokens=True))
+            for ids in batch_input_ids
+        ]
 
         kl_loss = self.compute_kl_loss(dp_probs, non_dp_probs, batch_input_ids, batch_structural_tokens, step)
 
         if math.isnan(loss) or math.isnan(kl_loss):
             pdb.set_trace()
-        # print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}')
         print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}, lambda_kl is {lambda_kl}')
-        # add kl loss to cross-entropy loss
-        # total_loss = loss + self.lambda_kl * kl_loss
+
+        # Add kl loss to cross-entropy loss
         total_loss = loss + lambda_kl * kl_loss
-        # pdb.set_trace()
         return total_loss
         # else:
         #     return loss
+
 
     def is_local_master(self) -> bool:
         """

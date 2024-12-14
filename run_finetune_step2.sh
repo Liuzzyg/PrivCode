@@ -13,6 +13,7 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base")
+MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base")
 # MODEL_PATHS=("bigcode/starcoder2-7b")
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
@@ -23,13 +24,17 @@ BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
 # DP settings
-TARGET_EPSILONs=( 4)
+TARGET_EPSILONs=(1)
 NON_PRIVATE="y"
 NON_PRIVATE="no"
 
+# round-trip settings
+RT_MODEL="Llama-3.1-70B-Instruct"
+SIM_THRESHOLD=0.82
+
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=50
+SAVE_FREQ=100
 # SAVE_FREQ_EPOCH=1
 
 for MODEL_PATH in "${MODEL_PATHS[@]}"; do
@@ -38,11 +43,11 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
         MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
         if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
-            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/final_private_syndata_dp${TARGET_EPSILON}.0.jsonl"
-            OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/${MODEL_NAME}_dp${TARGET_EPSILON}/privsyn"
+            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_dp${TARGET_EPSILON}.0.jsonl"
+            OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}/privsyn"
         else
-            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/final_original_data_dp${TARGET_EPSILON}.0.jsonl"
-            OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_final_filtered/${MODEL_NAME}_dp${TARGET_EPSILON}/dp${TARGET_EPSILON}_baseline"
+            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0.jsonl"
+            OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}/dp${TARGET_EPSILON}_baseline"
         fi
 
         # Run the finetune script using deepspeed
