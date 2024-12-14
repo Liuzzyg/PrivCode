@@ -124,3 +124,19 @@ bash data/private_syn/run_clean_data.sh
 ```
 scp -r -v /p/fzv6enresearch/liuzheng/dpcode/data fzv6en@rivanna.hpc.virginia.edu:/scratch/fzv6en/liuzheng/dpcode
 ```
+
+
+
+
+## round-trip test
+Installation
+```
+pip install -r requirements_round_trip.txt
+```
+
+Get start
+
+In the line 112 of "data/private_syn/round_trip_test_prompt.py", change the 'download_dir' to your own cache dir, or commit it.
+```
+bash data/private_syn/run_rt_test_prompt.sh
+```
