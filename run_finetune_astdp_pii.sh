@@ -12,7 +12,7 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 # MODEL_PATH="ise-uiuc/Magicoder-S-DS-6.7B"
 
-DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
+DATASET_NAME="data/pii_dataset/raw_dataset/pii_instruction_dataset_cleaned.jsonl"
 
 # Training settings
 MAX_STEPS=1000
@@ -28,16 +28,16 @@ ALPHA=0.01  # main
 # ALPHA=0.2  # for ablation
 # ALPHA=0.0001  # for ablation
 
-MAX_LAMBDAs=(1000)
+MAX_LAMBDAs=(100)
 MIN_LAMBDA=0.1
 
 # DP settings
-TARGET_EPSILONs=( 10)
+TARGET_EPSILONs=( 1)
 NON_PRIVATE="no"  # Set to "y" for non-private training
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=50
+SAVE_FREQ=10
 # SAVE_FREQ_EPOCH=1
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
@@ -46,7 +46,7 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
         # OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}_klstep${KL_STEP}_testdecline_alpha0.02"
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
+        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
 
         # Run the finetune script using deepspeed
         deepspeed finetune_astdp.py \

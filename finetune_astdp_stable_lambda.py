@@ -18,7 +18,7 @@ from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
 from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
 
-from trainer_deepspeed_astdp import Trainer
+from trainer_deepspeed_astdp_stable_lambda import Trainer
 from compiled_args import (PrivacyArguments, TrainingArguments)
 from deepspeed.ops.adam import DeepSpeedCPUAdam
 

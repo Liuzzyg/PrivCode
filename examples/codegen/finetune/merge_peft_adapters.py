@@ -17,12 +17,22 @@ def get_args():
 def main():
     args = get_args()
 
-    base_model = AutoModelForCausalLM.from_pretrained(
-        args.base_model_name_or_path,
-        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
-        # return_dict=True,
-        # torch_dtype=torch.float16 
-    )
+    if args.base_model_name_or_path == "Qwen/CodeQwen1.5-7B":
+        base_model = AutoModelForCausalLM.from_pretrained(
+            args.base_model_name_or_path,
+            cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+            do_sample=True
+            # return_dict=True,
+            # torch_dtype=torch.float16 
+        )
+    else:
+        base_model = AutoModelForCausalLM.from_pretrained(
+            args.base_model_name_or_path,
+            cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+            # do_sample=True
+            # return_dict=True,
+            # torch_dtype=torch.float16 
+        )
 
     model = PeftModel.from_pretrained(base_model, args.peft_model_path)
     model = model.merge_and_unload()

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define GPU devices
-gpus=("0" "1" "2" "3")
+gpus=("4" "5" "6" "7")
 gpus=("0" "1")
 
 # Define multiple model paths for iteration
@@ -11,17 +11,20 @@ MODEL_PATHS=(
   # "deepseek-ai/deepseek-coder-1.3b-base"
   # "deepseek-ai/deepseek-coder-6.7b-base" 
   # "Qwen/Qwen2.5-Coder-1.5B" 
-  "Qwen/Qwen2.5-Coder-7B" 
+  # "Qwen/Qwen2.5-Coder-7B" 
+  # "google/codegemma-7b"
+  "Qwen/CodeQwen1.5-7B"
 )
 
 # Static parameters
 datasets=("humaneval" "mbpp")
-# datasets=("mbpp")
+datasets=("mbpp")
+datasets=("humaneval")
 backend="vllm"
 tp=1
 greedy="--greedy"
 
-max_workers=2
+max_workers=4
 
 
 # Initialize GPU index
@@ -35,7 +38,7 @@ for model_path in "${MODEL_PATHS[@]}"; do
     MODEL_NAME=$(echo $model_path | awk -F '/' '{print $NF}')
     
     # Define output root directory based on the model name
-    output_root="generate/evalplus_0.3.1/${MODEL_NAME}/pretrain"
+    output_root="generate/evalplus_0.3.1/${MODEL_NAME}/pretrain_chat"
 
     # Define the command with parameters for evalplus.evaluate
     command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
@@ -44,8 +47,16 @@ for model_path in "${MODEL_PATHS[@]}"; do
       --dataset \"${dataset}\" \
       --backend \"${backend}\" \
       --tp ${tp} \
-      --force-base-prompt \
       ${greedy}"
+
+    # command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
+    #   --model \"${model_path}\" \
+    #   --root \"${output_root}\" \
+    #   --dataset \"${dataset}\" \
+    #   --backend \"${backend}\" \
+    #   --tp ${tp} \
+    #   --force-base-prompt \
+    #   ${greedy}"
 
     # Run command in the background
     echo "Running on GPU ${gpus[$gpu_index]}: $command"

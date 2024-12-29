@@ -15,29 +15,23 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
-MAX_STEPS=1000
+MAX_STEPS=100
 BATCH_SIZE=4
 GRAD_ACCUM_STEPS=16
 
 # LAMBDA=1000
 # KL_STEP=10000
 
-# the bigger, the more fastly lambda declines
-ALPHA=0.01  # main
-
-# ALPHA=0.2  # for ablation
-# ALPHA=0.0001  # for ablation
 
 MAX_LAMBDAs=(1000)
-MIN_LAMBDA=0.1
 
 # DP settings
-TARGET_EPSILONs=( 10)
+TARGET_EPSILONs=( 4)
 NON_PRIVATE="no"  # Set to "y" for non-private training
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=50
+SAVE_FREQ=20
 # SAVE_FREQ_EPOCH=1
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
@@ -46,10 +40,10 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
         # OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}_klstep${KL_STEP}_testdecline_alpha0.02"
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
+        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/stable_lambda/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}"
 
         # Run the finetune script using deepspeed
-        deepspeed finetune_astdp.py \
+        deepspeed finetune_astdp_stable_lambda.py \
             --model_path $MODEL_PATH \
             --dataset_name $DATASET_NAME \
             --max_steps $MAX_STEPS \
@@ -60,8 +54,6 @@ for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
             --save_freq $SAVE_FREQ \
             --target_epsilon $TARGET_EPSILON \
             --non_private $NON_PRIVATE \
-            --alpha $ALPHA \
-            --min_lambda_kl $MIN_LAMBDA \
             --max_lambda_kl $MAX_LAMBDA \
             --deepspeed_config examples/codegen/finetune/config_stage2.json
             # --lambda_kl $LAMBDA \
