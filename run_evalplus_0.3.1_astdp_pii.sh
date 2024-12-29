@@ -3,19 +3,16 @@
 # Define parameters
 gpus=("4" "5" "6" "7")
 # gpus=("0" "2" "3" "5" "4")
-gpus=( "0" )
+gpus=( "1" )
 # gpus=("0" "1" "2" "3" "4" "5" "6" "7")
-gpus=("1" "0" "2")
+# gpus=("0" "2")
 
-# MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
-MODEL_PATH="bigcode/starcoder2-3b"
-MODEL_PATH="bigcode/starcoder2-7b"
-MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
+
 MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-dp_epsilons=(0.2)
+dp_epsilons=(0.2 1 4 10)
 
 # lambda_kl=(0.1)
 lambda_kl=(1000)
@@ -24,23 +21,16 @@ kl_steps=(10000)
 # kl_steps=(2)
 
 ALPHA=0.01  # the bigger, the more fastly lambda declines
-MAX_LAMBDA=1000  # for ds-coder
+MAX_LAMBDA=100  # for ds-coder
 # MAX_LAMBDA=1
 # MAX_LAMBDA=5  # for starcoder2-7b
 MIN_LAMBDA=0.1
 
 
-# steps=(40 50 45)
-steps=(5 100 150)
-# steps=(200 250 300 325)
-steps=(30 40 50 60)
-steps=(180 200)
-steps=(110 90 130 160 170 190 180)
-steps=(600 700 800 900 1000 1200 1300 750)
-steps=(700 800 900)
+steps=(100 200)
 
 # Static parameters
-output_root="generate/evalplus_0.3.1/${MODEL_NAME}/astdp"
+output_root="generate/evalplus_0.3.1/pii/${MODEL_NAME}/astdp"
 datasets=("humaneval" "mbpp")
 # datasets=("mbpp")
 datasets=("humaneval")
@@ -50,7 +40,7 @@ tp=1
 greedy="--greedy"
 
 
-max_workers=8
+max_workers=1
 
 
 # Initialize GPU index and process counter
@@ -68,7 +58,7 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
           # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
 
           # declined lambda
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
           
 
           # Define the command with parameters for evalplus.evaluate

@@ -950,10 +950,10 @@ class Trainer:
 
         if math.isnan(loss) or math.isnan(kl_loss):
             pdb.set_trace()
-        print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}, lambda_kl is {lambda_kl}')
+        print(f'In this batch, cross-entropy loss is {loss}, kl-loss is {kl_loss}, lambda_kl is {self.max_lambda_kl}')
 
         # Add kl loss to cross-entropy loss
-        total_loss = loss + lambda_kl * kl_loss
+        total_loss = loss + self.max_lambda_kl * kl_loss
         return total_loss
         # else:
         #     return loss

@@ -2,7 +2,7 @@
 
 #SBATCH -c 32
 #SBATCH --mem 80G
-#SBATCH -t 1-00:00:00
+#SBATCH -t 4-00:00:00
 #SBATCH -p gpu --gres=gpu:4
 #SBATCH -n 1
 #SBATCH -w jaguar04
@@ -25,9 +25,9 @@ cd /p/fzv6enresearch/liuzheng/dpcode
 # python run_merge_peft_step2.py
 
 
-# conda activate dpcode_test
+conda activate dpcode_test
 
-# bash run_finetune_step2.sh
+bash run_finetune_step2.sh
 
 
 
@@ -37,9 +37,9 @@ cd /p/fzv6enresearch/liuzheng/dpcode
 
 
 
-conda activate dpcode_test
+# conda activate dpcode_test
 
-bash run_finetune_astdp.sh
+# bash run_finetune_astdp.sh
 
 
 

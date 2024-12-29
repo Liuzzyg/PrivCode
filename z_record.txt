@@ -14,3 +14,18 @@
 发现只微调code snippet，虽然astdp的model在humaneval上有5个点左右的提升（epsilon=4），
 但是实际上在剩余的magicoder数据集上根据prompt所产生的代码会变差，原本执行过滤后剩余22000左右，现在只剩16000左右。
 正常现象：毕竟之前微调学习的是magicoder内prompt+code的对应关系。
+
+ablation:
+alpha: 正在跑0.2，
+       要跑：0.0001
+max_lambda: 正在跑，100000, 1
+
+
+
+
+12.18
+pipeline instruction finetuning
+
+test: chat and no chat
+
+pii: describe prompt做instruct finetuning

@@ -1,64 +1,130 @@
-# import torch
-# from transformers import AutoTokenizer, AutoModelForTokenClassification
-
-# # 加载 tokenizer 和模型
-# tokenizer = AutoTokenizer.from_pretrained("bigcode/starpii")
-# model = AutoModelForTokenClassification.from_pretrained(
-#     "bigcode/starpii",
-#     cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
-#     )
-
-# # 输入示例文本
-# text = "My email is johndoe@example.com and my phone number is 123-456-7890."
-
-# # 将输入文本进行 tokenization
-# inputs = tokenizer(text, return_tensors="pt", truncation=True, padding=True, is_split_into_words=False)
-
-# # 获取模型输出
-# with torch.no_grad():
-#     outputs = model(**inputs)
-
-# # 获取标签预测结果
-# logits = outputs.logits
-# predictions = torch.argmax(logits, dim=2)
-
-# # 将预测结果转换为标签
-# labels = [model.config.id2label[p.item()] for p in predictions[0]]
-
-# # 显示每个 token 及其预测的标签
-# tokens = tokenizer.convert_ids_to_tokens(inputs["input_ids"][0])
-# for token, label in zip(tokens, labels):
-#     print(f"Token: {token}, Label: {label}")
-
-
-
+import argparse
+import json
+from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+import tqdm
+import torch
 import pdb
+import os
+import numpy as np
+from prompt_template import generate_pii_prompt_signature
 
-# 加载 tokenizer 和模型
-tokenizer = AutoTokenizer.from_pretrained("bigcode/starpii")
-model = AutoModelForTokenClassification.from_pretrained(
-    "bigcode/starpii",
-    cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+
+class CodeLLMDetector:
+    def __init__(self, model_path, cache_dir, max_tokens, temperature, n, seed):
+        # Load the code LLM
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        num_GPUs = torch.cuda.device_count()
+        self.llm = LLM(
+            model=model_path,
+            download_dir=cache_dir,
+            tensor_parallel_size=num_GPUs
+        )
+        self.sampling_params = SamplingParams(
+            max_tokens=max_tokens,
+            temperature=temperature,
+            n=n
+        )
+
+        # Load the NER model for PII detection
+        self.tokenizer = AutoTokenizer.from_pretrained("bigcode/starpii")
+        self.model = AutoModelForTokenClassification.from_pretrained(
+            "bigcode/starpii",
+            cache_dir=cache_dir,
+            # device_map="auto"
+        ).to(device)
+
+        self.ner_pipeline = pipeline(
+            "ner", 
+            model=self.model, 
+            tokenizer=self.tokenizer, 
+            aggregation_strategy="simple", 
+            device=device
+        ) 
+
+    def generate_and_detect(self, prompt_num, output_path):
+        # Generate prompts
+        prompts = generate_pii_prompt_signature(prompt_num, seed=self.sampling_params.seed)
+
+        # Progress bar for generation
+        generated_solutions = []
+        print("Generating solutions...")
+        for prompt in tqdm.tqdm(prompts, desc="Prompt generation"):
+            solutions = self.llm.generate(prompt, sampling_params=self.sampling_params)
+            for i, solution in enumerate(solutions):
+                for _, output in enumerate(solution.outputs):
+                    generated_solutions.append({"prompt": prompt, "solution": output.text})
+                    # pdb.set_trace()
+
+        # Progress bar for detection
+        print("Detecting PII entities...")
+        entity_count = 0
+        results_to_save = []
+        
+        for generated in tqdm.tqdm(generated_solutions, desc="PII Detection"):
+            solution = generated["solution"]
+            try:
+                # Attempt to detect PII entities in the solution
+                results = self.ner_pipeline(solution)
+                entity_count += len(results)
+                results_to_save.append({"prompt": generated["prompt"], "solution": solution, "entities": results})
+            except Exception as e:
+                # Skip this sample if an error occurs
+                print(f"Error processing solution for prompt: {generated['prompt']}. Error: {e}")
+                continue
+            
+        print(f"Total entities detected: {entity_count}")
+        results_to_save.append({"total_entities_detected": entity_count})
+
+        output_dir = os.path.dirname(output_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+
+        # Save results to output path
+        with open(output_path, "w") as f:
+            for result in results_to_save:
+                # Ensure all float32 values are converted to regular Python floats
+                result = self.convert_float32(result)
+                f.write(json.dumps(result) + "\n")
+
+        return entity_count, generated_solutions
+
+    def convert_float32(self, data):
+        """Convert float32 values in the data to Python native float."""
+        if isinstance(data, dict):
+            return {key: self.convert_float32(value) for key, value in data.items()}
+        elif isinstance(data, list):
+            return [self.convert_float32(item) for item in data]
+        elif isinstance(data, np.float32):
+            return float(data)  # Convert np.float32 to native Python float
+        else:
+            return data
+
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Generate and detect PII using Code LLM.")
+    parser.add_argument("--model_path", type=str, required=True, help="Path to the LLM model.")
+    parser.add_argument("--cache_dir", type=str, default="/bigtemp/fzv6en/.cache/huggingface/hub", help="Cache directory for models.")
+    parser.add_argument("--prompt_num", type=int, required=True, help="Number of prompts to generate.")
+    parser.add_argument("--max_tokens", type=int, default=512, help="Maximum number of tokens to generate.")
+    parser.add_argument("--temperature", type=float, default=0.8, help="Temperature for sampling.")
+    parser.add_argument("--n", type=int, default=4, help="Number of completions to generate per prompt.")
+    parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility.")
+    parser.add_argument("--output_path", type=str, required=True, help="Path to save the output results.")
+
+    args = parser.parse_args()
+
+    detector = CodeLLMDetector(
+        model_path=args.model_path,
+        cache_dir=args.cache_dir,
+        max_tokens=args.max_tokens,
+        temperature=args.temperature,
+        n=args.n,
+        seed=args.seed
     )
 
-# 创建一个 NER pipeline
-ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
-
-# 输入的示例文本
-text = "account.password = *********\n(END OF SOLUTION)\n\nThis code sets the password of the account to be *********. Note that passwords should never be stored in plain text or displayed publicly in any kind of security-sensitive context.\n"
-text = """
- ['<｜begin▁of▁sentence｜>def check_IP_address():\nIPv6_address =  "2001:0db8:85a3:0000:0000:8a2e:0370:7334"\n\ndef check_IPv6(IP_address):\n if ":" not in IP_address:\n   print("Not a valid IPv6 address.")\n elif len(IP_address.split(":")) > 8:\n   print("IPv6 Address is not valid', "<｜begin▁of▁sentence｜>def check_IP_address():\nIPv6_address =  input('Enter IPv6 Address: ')\nIPv6_binary = binaries[8:12] + binaries[14:18] + binaries[18:22] +  binaries[24:28]\n\nbinary_int = int(IPv6_binary,2)\nprint(binary_int)\n\nNote: Please consider IPv6 addresses as binary strings. You can simply convert IPv6 address into binary format", '<｜begin▁of▁sentence｜>def check_IP_address():\nIPv6_address = 1\nIPv4_address = 2\nif (type(IPv6_address) == type(IPv4_address)):\n    print("The type is matching.")\nelse:\n    print("The types are not matching.")\nimport socket\nhostname = socket.gethostname()\nprint(hostname)\nimport psutil\nprint(psutil.disk_partitions())\nprint(psutil.disk_usage(\'/\'))\nimport platform', "<｜begin▁of▁sentence｜>def check_IP_address():\nIPv6_address =  '2001:0db8:85a3:0000:0000:8a2e:0370:7334'\n\nmatch = re.match('^([a-zA-Z0-9]{1,4}:){7}[a-zA-Z0-9]{1,4}\\s*$', IPv6_address)\nif match:\n    print(IPv", '<｜begin▁of▁sentence｜>def check_IP_address():\nIPv6_address =  "2001:0db8:85a3:0000:0000:8a2e:0370:7334"\n\nIPmask = 0o12345678\n\nIPv6 = IPmask ^ IPv6_address\n\nprint(bin(IPv6))\n\n# If you need a 64 bit integer for IPv6 then convert it\nIPv6']
-
-
-
-
-"""
-
-
-# 使用 pipeline 进行隐私信息检测
-results = ner_pipeline(text)
-
-# 输出检测结果
-for entity in results:
-    print(f"Entity: {entity['word']}, Type: {entity['entity_group']}, Confidence: {entity['score']}")
+    entity_count, solutions = detector.generate_and_detect(
+        prompt_num=args.prompt_num,
+        output_path=args.output_path
+    )
