@@ -11,20 +11,27 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 
-MODEL_PATHS=("bigcode/starcoder2-7b")
+# MODEL_PATHS=("bigcode/starcoder2-7b")
 MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 # MODEL_PATHS=( "Qwen/CodeQwen1.5-7B")
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
 # Training settings
-MAX_STEPS=100
+MAX_STEPS=2000
 BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
 # DP settings
-TARGET_EPSILONs=( 0.2)
+TARGET_EPSILONs=( 1)
+
+# for inf epsilon dpsgd baseline
+TARGET_EPSILONs=( 100000)
+DATA_EPSILON=1
+
+
 NON_PRIVATE="y"
+NON_PRIVATE="no"
 
 # ast settings
 MAX_LAMBDAs=(1000)
@@ -37,7 +44,7 @@ SIM_THRESHOLD=0.82
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=20
+SAVE_FREQ=100
 # SAVE_FREQ_EPOCH=1
 
 
@@ -49,10 +56,13 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-
-                    DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dpinf_baseline"
-
+                    if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
+                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dpinf_baseline"
+                    else
+                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${DATA_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${DATA_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
+                    fi
 
                     # Run the finetune script using deepspeed
                     deepspeed finetune_step2.py \

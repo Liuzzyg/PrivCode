@@ -25,9 +25,9 @@ cd /p/fzv6enresearch/liuzheng/dpcode
 # python run_merge_peft_step2.py
 
 
-conda activate dpcode_test
+# conda activate dpcode_test
 
-bash run_finetune_step2.sh
+# bash run_finetune_step2_nopostprocess.sh
 
 
 
@@ -46,3 +46,23 @@ bash run_finetune_step2.sh
 # conda activate codebertscore
 
 # bash data/private_syn/run_rt_test_prompt.sh
+
+
+# conda activate codebertscore
+
+# bash data/vulnerability/privsyn/run_generate.sh
+
+
+# conda activate codebertscore
+
+# bash pii_leaks_eval/run_pii_detect_step2.sh
+
+
+conda activate bigcodebench
+
+bash run_bigcodebench_step2_pretrain.sh
+
+
+# conda activate dpcode_test
+
+# bash run_finetune_step2_vulnerable_infbaseline.sh

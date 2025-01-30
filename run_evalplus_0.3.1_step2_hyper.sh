@@ -2,11 +2,11 @@
 
 # Define parameters
 # gpus=("4" "5" "6" "7")
-gpus=("1" "0" "2" "3")
-# gpus=("1")
+gpus=("0" "1" "2" "3" )
+gpus=("1")
 # gpus=("2" "3" "4" "5" "6" "7")
 # gpus=("4" "5")
-gpus=("0"  )
+# gpus=("0"  )
 
 MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="bigcode/starcoder2-3b"
@@ -16,10 +16,10 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 # MODEL_PATH="google/codegemma-7b"
 
-# MODEL_PATHS=("google/codegemma-7b" "Qwen/CodeQwen1.5-7B" )
-# MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
-# MODEL_PATHS=("google/codegemma-7b")
-MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
+MODEL_PATHS=("google/codegemma-7b"  )
+MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
+# MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" )
+# MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 
 global_dp_epsilon=10
 dp_epsilons=(4)
@@ -28,7 +28,8 @@ dp_epsilons=('inf')
 steps=(2000)
 steps=(100 200)
 # steps=(200)
-# steps=(100 )
+steps=(100 )
+# steps=(50 )
 
 # round-trip configs
 round_trip_model="Llama-3.1-70B-Instruct"
@@ -47,7 +48,7 @@ data_sizes=(55500)
 
 # Static parameters
 datasets=("humaneval" "mbpp")
-# datasets=("mbpp")
+datasets=("mbpp")
 # datasets=("humaneval")
 
 is_baseline='no'
@@ -57,10 +58,10 @@ backend="vllm"
 tp=1
 greedy="--greedy"
 
-max_workers=1
+max_workers=4
 
 chat_model='y'
-# chat_model='n'
+chat_model='n'
 
 # Initialize GPU index
 gpu_index=0

@@ -3,28 +3,30 @@
 # Define parameters
 # gpus=("4" "5" "6" "7")
 gpus=("5" "0" "2")
-gpus=("1")
+gpus=("0")
 # gpus=("2" "3" "4" "5" "6" "7")
 # gpus=("4" "5")
-# gpus=("0" "1" "2" )
+# gpus=("0" "2" )
 
-MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
+# MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="bigcode/starcoder2-3b"
 # MODEL_PATH="bigcode/starcoder2-7b"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
 MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 # MODEL_PATH="google/codegemma-7b"
+# MODEL_PATH="Qwen/CodeQwen1.5-7B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 global_dp_epsilon=4
 dp_epsilons=(4)
 dp_epsilons=('inf')
 
-steps=(2000)
+# steps=(2000)
 steps=(100)
 # steps=(200)
 # steps=(100 )
+# steps=( 800)
 
 # round-trip configs
 round_trip_model="Llama-3.1-70B-Instruct"
@@ -44,7 +46,7 @@ datasets=("mbpp")
 # datasets=("humaneval")
 
 is_baseline='yes'
-is_baseline='no'
+# is_baseline='no'
 
 backend="vllm"
 # backend="hf"
@@ -52,6 +54,7 @@ tp=1
 greedy="--greedy"
 
 max_workers=1
+
 
 # Initialize GPU index
 gpu_index=0
@@ -83,8 +86,8 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
                 --root \"${output_root}\" \
                 --dataset \"${dataset}\" \
                 --backend \"${backend}\" \
-                --tp ${tp} \
                 --force-base-prompt \
+                --tp ${tp} \
                 ${greedy}"
 
               # Run command in the background

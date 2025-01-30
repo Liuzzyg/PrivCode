@@ -15,15 +15,15 @@ gpus = ['0', '1', '2', '3']
 # gpus = ['0', '1']
 # gpus = ['5', '5']
 
-global_dp_epsilons = 1
-dp_epsilons = [1]
-dp_epsilons = ['inf']
+global_dp_epsilons = 4
+dp_epsilons = [4]
+# dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
 
 steps = [2000]
 steps = [100]
-# steps = [50]
+steps = [ 800]
 
 
 # base_model = "bigcode/starcoder2-3b"
@@ -49,7 +49,7 @@ data_sizes = [55500]
 is_baseline = False
 is_baseline = True
 
-max_workers = 4
+max_workers = 1
 
 
 def get_directories(path):

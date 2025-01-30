@@ -14,6 +14,7 @@ gpus = ['0', '1', '2']
 # gpus = ['5', '7']
 
 dp_epsilons = [0.2, 1, 4, 10]
+dp_epsilons = [0.2, 1]
 # dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
@@ -35,7 +36,7 @@ steps = [110, 90, 125, 130, 140, 160, 170, 190]
 # steps = [16, 20, 25, 28, 30, 32, 35, 50, 60, 64, 70, 80]
 steps = [600, 700, 800, 900, 1000, 1200, 1300, 750]
 # steps = [600, 700, 900, 1200, 750]
-steps = [50, 500, 600]
+steps = [50, 100]
 
 # base_model = "bigcode/starcoder2-3b"
 # base_model = "bigcode/starcoder2-7b"
@@ -83,8 +84,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                         # output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lambda_kl}_klstep{kl_step}_merged/checkpoint-{step}"
 
                         # # decline
-                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
-                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
+                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
+                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
                         
                         arguments = [
                             '--base_model_name_or_path', base_model,

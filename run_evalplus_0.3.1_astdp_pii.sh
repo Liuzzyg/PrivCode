@@ -5,7 +5,7 @@ gpus=("4" "5" "6" "7")
 # gpus=("0" "2" "3" "5" "4")
 gpus=( "1" )
 # gpus=("0" "1" "2" "3" "4" "5" "6" "7")
-# gpus=("0" "2")
+gpus=("0" "2")
 
 
 MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
@@ -13,6 +13,7 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 
 MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 dp_epsilons=(0.2 1 4 10)
+dp_epsilons=(0.2  4 )
 
 # lambda_kl=(0.1)
 lambda_kl=(1000)
@@ -27,10 +28,10 @@ MAX_LAMBDA=100  # for ds-coder
 MIN_LAMBDA=0.1
 
 
-steps=(100 200)
+steps=(20 30 40 )
 
 # Static parameters
-output_root="generate/evalplus_0.3.1/pii/${MODEL_NAME}/astdp"
+output_root="generate/evalplus_0.3.1/pii_python/${MODEL_NAME}/astdp"
 datasets=("humaneval" "mbpp")
 # datasets=("mbpp")
 datasets=("humaneval")
@@ -40,7 +41,7 @@ tp=1
 greedy="--greedy"
 
 
-max_workers=1
+max_workers=2
 
 
 # Initialize GPU index and process counter
@@ -58,7 +59,7 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
           # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
 
           # declined lambda
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
+          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
           
 
           # Define the command with parameters for evalplus.evaluate

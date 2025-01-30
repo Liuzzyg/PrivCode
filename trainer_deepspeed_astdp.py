@@ -792,6 +792,15 @@ class Trainer:
             code_snippets = code_snippets.split("```")[0]
             code_snippets = code_snippets.strip()
             # pdb.set_trace()
+            
+        elif self.dataset_name == "SafeCoder/data_train_val/train/evol.jsonl":
+            parts = code_snippets.split("```")
+            # pdb.set_trace()
+            if len(parts) >= 3:
+                code_snippets = parts[1].strip()
+            else:
+                code_snippets = ""  # 如果没有匹配到两个 "```"，返回空字符串
+            # pdb.set_trace()
 
         else:       # ablation: no evolution
             # pdb.set_trace()
@@ -839,7 +848,7 @@ class Trainer:
         extractor = TokenExtractor()
         extractor.visit(tree)
 
-        # pdb.set_trace()
+        pdb.set_trace()
 
         return structural_tokens
     

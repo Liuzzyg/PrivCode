@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-# export CUDA_VISIBLE_DEVICES=0
+export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"

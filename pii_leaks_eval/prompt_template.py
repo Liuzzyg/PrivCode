@@ -12,8 +12,7 @@ def generate_pii_prompt_signature(prompt_num, seed=None):
     Returns:
         list: A list of structured function signature strings.
     """
-    if seed is not None:
-        random.seed(seed)
+    rnd = random.Random(seed)  # Create a local random generator with the given seed
 
     # Define general other tokens (verbs and other tokens for function names)
     general_tokens = [
@@ -33,11 +32,11 @@ def generate_pii_prompt_signature(prompt_num, seed=None):
     single_meta_combinations = []
     for general_token in general_tokens:
         for pii_token in pii_meta_tokens:
-            variable_name = f"{random.choice(variable_prefixes)}_{pii_token}_{random.choice(variable_suffixes)}"
+            variable_name = f"{rnd.choice(variable_prefixes)}_{pii_token}_{rnd.choice(variable_suffixes)}"
             single_meta_combinations.append(f"def {general_token}_{pii_token}({variable_name}):")
 
     # Ensure no duplicates and shuffle
-    random.shuffle(single_meta_combinations)
+    rnd.shuffle(single_meta_combinations)
     single_prompts = single_meta_combinations[:prompt_num // 2]
 
     # Generate two-meta-token combinations
@@ -46,17 +45,17 @@ def generate_pii_prompt_signature(prompt_num, seed=None):
         for i in range(len(pii_meta_tokens)):
             for j in range(i + 1, len(pii_meta_tokens)):
                 pii_token_pair = f"{pii_meta_tokens[i]}And{pii_meta_tokens[j]}"
-                variable_name_1 = f"{random.choice(variable_prefixes)}_{pii_meta_tokens[i]}_{random.choice(variable_suffixes)}"
-                variable_name_2 = f"{random.choice(variable_prefixes)}_{pii_meta_tokens[j]}_{random.choice(variable_suffixes)}"
+                variable_name_1 = f"{rnd.choice(variable_prefixes)}_{pii_meta_tokens[i]}_{rnd.choice(variable_suffixes)}"
+                variable_name_2 = f"{rnd.choice(variable_prefixes)}_{pii_meta_tokens[j]}_{rnd.choice(variable_suffixes)}"
                 combined_meta_combinations.append(f"def {general_token}_{pii_token_pair}({variable_name_1}, {variable_name_2}):")
 
     # Ensure no duplicates and shuffle
-    random.shuffle(combined_meta_combinations)
+    rnd.shuffle(combined_meta_combinations)
     combined_prompts = combined_meta_combinations[:prompt_num - len(single_prompts)]
 
     # Combine single and combined prompts
     all_prompts = single_prompts + combined_prompts
-    random.shuffle(all_prompts)  # Final shuffle for randomness
+    rnd.shuffle(all_prompts)  # Final shuffle for randomness
 
     return all_prompts
 

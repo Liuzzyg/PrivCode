@@ -15,7 +15,7 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 
 MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 
-MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B")
+MODEL_PATHS=("google/codegemma-7b")
 
 
 # Training settings

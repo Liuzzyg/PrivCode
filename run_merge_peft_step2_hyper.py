@@ -15,14 +15,15 @@ gpus = ['0', '1', '2']
 # gpus = ['0', '1']
 # gpus = ['5', '5']
 
-global_dp_epsilons = 1
-dp_epsilons = [4]
+global_dp_epsilons = 10
+dp_epsilons = [10]
 dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
 
 steps = [200]
 steps = [100, 200]
+steps = [50]
 
 
 # base_model = "bigcode/starcoder2-3b"
@@ -34,10 +35,10 @@ base_model = "Qwen/Qwen2.5-Coder-7B"
 base_model = "google/codegemma-7b"
 
 base_models = [
-                # "deepseek-ai/deepseek-coder-6.7b-base", 
+                "deepseek-ai/deepseek-coder-6.7b-base", 
                "google/codegemma-7b", 
-            #    "Qwen/Qwen2.5-Coder-7B",
-            #    "Qwen/CodeQwen1.5-7B"
+               "Qwen/Qwen2.5-Coder-7B",
+               "Qwen/CodeQwen1.5-7B"
                ]
 
 # round-trip configs

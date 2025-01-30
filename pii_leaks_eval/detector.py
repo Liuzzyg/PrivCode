@@ -18,7 +18,8 @@ class CodeLLMDetector:
         self.llm = LLM(
             model=model_path,
             download_dir=cache_dir,
-            tensor_parallel_size=num_GPUs
+            tensor_parallel_size=num_GPUs,
+            max_model_len=8000,
         )
         self.sampling_params = SamplingParams(
             max_tokens=max_tokens,

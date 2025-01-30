@@ -2,7 +2,7 @@
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # export CUDA_VISIBLE_DEVICES=4,5,6,7
-# export CUDA_VISIBLE_DEVICES=0
+# export CUDA_VISIBLE_DEVICES=1
 
 # Script settings
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
@@ -40,7 +40,7 @@ SIM_THRESHOLD=0.82  # main
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=1000
+SAVE_FREQ=100
 # SAVE_FREQ_EPOCH=1
 
 for MODEL_PATH in "${MODEL_PATHS[@]}"; do

@@ -1,3 +1,36 @@
+<div align=center>
+  
+# PrivCode: When Code Synthesis Meets Differential Privacy
+</div>
+
+
+This is the official implementaion of paper ***PrivCode: When Code Synthesis Meets Differential Privacy***. This repository contains Pytorch training code and evaluation code. PRIVCODE is a Differetial Privacy (DP) code synthesis tool, which leverages the DP technique to generate synthetic code, allowing organizations to share and utilize code LLMs without privacy concerns.
+
+
+
+## 1. Contents
+- PrivCode: When Code Synthesis Meets Differential Privacy
+  - [1. Contents](#1-contents)
+  - [2. Project structure](#2-project-structure)
+  - [3. Get Start](#3-get-start)
+    - [3.1 Installation](#31-installation)
+    - [3.2 Dataset](#32-dataset)
+  - [4. Running Instructions](#running-instructions)
+  - [5. Acknowledgment](#5-acknowledgment)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Installation
 
 ### dpcode
@@ -139,4 +172,31 @@ Get start
 In the line 112 of "data/private_syn/round_trip_test_prompt.py", change the 'download_dir' to your own cache dir, or commit it.
 ```
 bash data/private_syn/run_rt_test_prompt.sh
+```
+
+
+## docker vulnerability eval
+```
+docker run --gpus all -it vulnerability_eval
+```
+
+```
+docker cp /bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable ff1d3ee405ed:/app
+```
+
+```
+docker cp /p/fzv6enresearch/liuzheng/dpcode/SafeCoder ff1d3ee405ed:/app
+```
+
+```
+bash SafeCoder/scripts/run_sec_eval.sh
+```
+
+```
+bash SafeCoder/scripts/run_print_results.sh
+```
+
+local:
+```
+bash SafeCoder/experiments/docker_cp.sh
 ```

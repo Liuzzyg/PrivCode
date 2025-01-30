@@ -201,6 +201,20 @@ def create_datasets(tokenizer, args):
         args.input_column_name = "problem"
         args.output_column_name = "solution"
 
+    elif args.dataset_name == "SafeCoder/data_train_val/train/evol.jsonl":
+        dataset = load_dataset(
+            "json", 
+            data_files=args.dataset_name,
+            split=args.split,
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+        )
+        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
+        train_data = dataset['train']
+        valid_data = dataset['test']
+
+        args.input_column_name = "instruction"
+        args.output_column_name = "output"
+
     elif args.dataset_name == 'data/oss_instruction/valid_processed_instruction_data_25k.jsonl':
         # synthetic private api numpy
         dataset = load_dataset(
