@@ -1,4 +1,4 @@
-data/data/oss_instruction/*
+data/oss_instruction/*
 data/private_info_check/*
 data/private_syn/Qwen2.5-Coder-1.5B/*
 data/private_syn/cleaned_private_syndata_test.jsonl
