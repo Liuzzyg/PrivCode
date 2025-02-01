@@ -17,7 +17,6 @@ generate/bigcodebench/*
 generate/*
 DS-1000/*
 entropy/*
-code-bert-score/*
 bigcodebench/*
 evalplus/*
 evalplus_copy/*
@@ -42,3 +41,4 @@ srun_resv.sh
 srun.sh
 srun_resv.sh
 SafeCoder/*
+code-bert-score/*
