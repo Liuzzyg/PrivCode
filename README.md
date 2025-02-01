@@ -30,7 +30,6 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 
 
 
-
 ## Installation
 
 ### dpcode
@@ -146,18 +145,11 @@ You can adjust the script as needed by commenting unused command. Or you can lea
 docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
 ```
 ```
-docker cp /p/fzv6enresearch/liuzheng/dpcode/data container_id:/app
+docker cp /data_path container_id:/app
 ```
 ```
 bash data/private_syn/run_clean_data.sh
 ```
-
-
-## scp to rivanna
-```
-scp -r -v /p/fzv6enresearch/liuzheng/dpcode/data fzv6en@rivanna.hpc.virginia.edu:/scratch/fzv6en/liuzheng/dpcode
-```
-
 
 
 
@@ -181,11 +173,11 @@ docker run --gpus all -it vulnerability_eval
 ```
 
 ```
-docker cp /bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable ff1d3ee405ed:/app
+docker cp /model_path ff1d3ee405ed:/app
 ```
 
 ```
-docker cp /p/fzv6enresearch/liuzheng/dpcode/SafeCoder ff1d3ee405ed:/app
+docker cp SafeCoder ff1d3ee405ed:/app
 ```
 
 ```
