@@ -41,3 +41,10 @@ srun_resv.sh
 srun.sh
 srun_resv.sh
 SafeCoder/*
+data/private_syn/clean_data.py
+data/private_syn/docker_requirements.txt
+data/private_syn/dockerfile
+data/private_syn/exe_clean_data_single.py
+data/private_syn/round_trip_test.py
+data/pii_dataset/raw_dataset/oss.py
+eval_bcb/run_bigcodebench_astdp.sh

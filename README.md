@@ -19,6 +19,20 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
   - [5. Acknowledgment](#5-acknowledgment)
 
 
+## 2. Project structure
+
+The structure of this project is as follows:
+```
+data
+-- private_syn -------------------------------- the scripts of data generation and post-process filter in utility experiment
+-- pii_dataset -------------------------------- the scripts of data generation and post-process filter in PII protection experiment
+-- vulnerability ------------------------------ the scripts of data generation and post-process filter in vulnerability protection experiment
+eval_bcb
+-- run_bigcodebench_step2.sh ------------------ evaluate the utility of PrivCode on BigCodeBench benchmark in utility experiment
+-- run_bigcodebench_dpbaseline_step2.sh ------- evaluate the utility of DPFT on BigCodeBench benchmark in utility experiment
+-- run_bigcodebench_infbaseline_step2.sh ------ evaluate the utility of NonDPFT on BigCodeBench benchmark in utility experiment
+-- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on BigCodeBench benchmark in utility experiment
+```
 
 
 
@@ -173,11 +187,11 @@ docker run --gpus all -it vulnerability_eval
 ```
 
 ```
-docker cp /model_path ff1d3ee405ed:/app
+docker cp /model_path container_id:/app
 ```
 
 ```
-docker cp SafeCoder ff1d3ee405ed:/app
+docker cp SafeCoder container_id:/app
 ```
 
 ```
