@@ -41,4 +41,3 @@ srun_resv.sh
 srun.sh
 srun_resv.sh
 SafeCoder/*
-code-bert-score/*
