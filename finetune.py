@@ -87,7 +87,7 @@ def get_args():
     parser.add_argument("--no_gradient_checkpointing", action="store_false")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--num_workers", type=int, default=None)
-    parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/deepseek-coder-6.3b-base/dp10_step800_test")
+    parser.add_argument("--output_dir", type=str, default=".../checkpoints_step2/magicoder_syndata/deepseek-coder-6.3b-base/dp10_step800_test")
     parser.add_argument("--log_freq", default=1, type=int)
     parser.add_argument("--eval_freq", default=1, type=int)
     parser.add_argument("--save_freq", default=5, type=int)
@@ -223,7 +223,7 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
-            # cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+            # cache_dir='.../.cache/huggingface/datasets'
         )
         # train_data = dataset["train"]
         # valid_data = dataset["test"]
@@ -328,7 +328,7 @@ def run_training(args, train_data, val_data):
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+        cache_dir=".../.cache/huggingface/hub",
         use_auth_token=True,
         use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,

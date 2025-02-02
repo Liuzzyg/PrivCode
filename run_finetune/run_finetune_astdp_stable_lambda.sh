@@ -39,8 +39,7 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 
 for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
-        # OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}_klstep${KL_STEP}_testdecline_alpha0.02"
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/stable_lambda/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}"
+        OUTPUT_DIR=".../checkpoints_codeonly/ablation/stable_lambda/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}"
 
         # Run the finetune script using deepspeed
         deepspeed finetune_astdp_stable_lambda.py \

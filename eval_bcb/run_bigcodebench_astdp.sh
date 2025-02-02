@@ -59,13 +59,9 @@ current_workers=0
 for dp_epsilon in "${dp_epsilons[@]}"; do
   for step in "${steps[@]}"; do
     for dataset in "${datasets[@]}"; do
-      # Set the output path and checkpoint path based on current parameters
-      # stable lambda
-      # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
-
       # declined lambda
       output_root="generate/bigcodebench/magicoder/${MODEL_NAME}/astdp/${dataset}"
-      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
+      checkpoint_path=".../checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_merged/checkpoint-${step}"
       
 
       # Define the command with parameters for evalplus.evaluate

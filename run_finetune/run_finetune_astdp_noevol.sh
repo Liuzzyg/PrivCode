@@ -54,7 +54,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
             DATASET_NAME="data/private_syn/Qwen2.5-Coder-1.5B/codeonly/promptsim_Llama-3.1-70B-Instruct_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize55500.jsonl"
 
-            OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/noevol/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_datasize55500"
+            OUTPUT_DIR=".../checkpoints_codeonly/ablation/noevol/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_datasize55500"
 
             # Run the finetune script using deepspeed
             deepspeed finetune_astdp.py \

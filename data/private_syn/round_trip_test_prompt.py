@@ -31,7 +31,6 @@ def generate_descriptions_batch(llm, generated_data, sampling_params, batch_size
         prompts.append(prompt)
         samples_mapping[len(prompts) - 1] = sample
 
-    # 创建进度条，显示生成描述的进度
     with tqdm(total=len(prompts), desc="Generating descriptions", unit="batch") as pbar:
         for batch_start in range(0, len(prompts), batch_size):
             batch_prompts = prompts[batch_start:batch_start + batch_size]
@@ -53,14 +52,12 @@ def generate_descriptions_batch(llm, generated_data, sampling_params, batch_size
                     sample["described_prompt"] = "You are tasked with " + valid_description
                     described_data.append(sample)
             
-            # 更新进度条
             pbar.update(len(batch_prompts))
     
     return described_data
 
 
 def filter_by_prompt_similarity(described_data, threshold):
-    """根据描述和原始问题的相似度过滤数据"""
     filtered_samples = []
     for sample in tqdm(described_data, desc="Filtering by prompt similarity", unit="sample"):
         original_prompt = sample.get("problem", "")
@@ -104,7 +101,7 @@ def main(args):
         model=args.round_trip_model, 
         tensor_parallel_size=num_GPUs, 
         gpu_memory_utilization=0.8,
-        download_dir="/bigtemp/fzv6en/.cache/huggingface/hub"
+        download_dir=".../.cache/huggingface/hub"
     )
     sampling_params = SamplingParams(max_tokens=args.max_tokens, n=args.generated_num, temperature=args.temperature)
 

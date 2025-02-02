@@ -72,12 +72,12 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
               # dp baseline
               if [ "$dp_epsilon" == "inf" ]; then
                   if [ "$is_baseline" == "no" ]; then
-                      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
+                      checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
                   else 
-                      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+                      checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
                   fi
               else
-                  checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+                  checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
               fi
 
               # Define the command with parameters for evalplus.evaluate

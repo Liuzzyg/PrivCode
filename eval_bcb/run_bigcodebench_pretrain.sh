@@ -57,10 +57,6 @@ for MODEL_PATH in "${MODEL_PATHs[@]}"; do
     for split in "${splits[@]}"; do
       for step in "${steps[@]}"; do
         for dataset in "${datasets[@]}"; do
-          # Set the output path and checkpoint path based on current parameters
-          # stable lambda
-          # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
-
           # declined lambda
           
           MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')

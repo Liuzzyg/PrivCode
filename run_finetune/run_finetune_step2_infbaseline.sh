@@ -58,10 +58,10 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
                     if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
                         DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
-                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dpinf_baseline"
+                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dpinf_baseline"
                     else
                         DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${DATA_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
-                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${DATA_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
+                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${DATA_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
                     fi
 
                     # Run the finetune script using deepspeed

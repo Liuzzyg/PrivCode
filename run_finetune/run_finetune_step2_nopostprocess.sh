@@ -51,7 +51,7 @@ for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
                     else
                         DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/ablation/private_syndata_55k_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                     fi
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/nopostprocess/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
+                    OUTPUT_DIR=".../checkpoints_codeonly/ablation/nopostprocess/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
 
 
                     # Run the finetune script using deepspeed

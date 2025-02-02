@@ -68,7 +68,7 @@ def main(args):
         split=args.split,
         # use_auth_token=True,
         num_proc=args.num_workers,
-        cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+        cache_dir='.../.cache/huggingface/datasets'
     )
     
     # Split into train and test sets

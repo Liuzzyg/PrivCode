@@ -75,8 +75,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 for lambda_kl in lambda_kls:
                     model_name = base_model.split("/")[-1]
                     if stable_lambda:
-                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/stable_lambda/{model_name}/dp{dp_epsilon}_lambda{max_lambda}/checkpoint-{step}'
-                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/stable_lambda/{model_name}/dp{dp_epsilon}_lambda{max_lambda}_merged/checkpoint-{step}'
+                        peft_model_path = f'.../checkpoints_codeonly/ablation/stable_lambda/{model_name}/dp{dp_epsilon}_lambda{max_lambda}/checkpoint-{step}'
+                        output_path = f'.../checkpoints_codeonly/ablation/stable_lambda/{model_name}/dp{dp_epsilon}_lambda{max_lambda}_merged/checkpoint-{step}'
                         arguments = [
                             '--base_model_name_or_path', base_model,
                             '--peft_model_path', peft_model_path,
@@ -84,8 +84,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                         ]
                     else:
                         if is_baseline:
-                            peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
-                            output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
+                            peft_model_path = f'.../checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
+                            output_path = f'.../checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
                             arguments = [
                                 '--base_model_name_or_path', base_model,
                                 '--peft_model_path', peft_model_path,
@@ -93,8 +93,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                             ]
                         else:
                             # # decline
-                            peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
-                            output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
+                            peft_model_path = f'.../checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}/checkpoint-{step}'
+                            output_path = f'.../checkpoints_codeonly/magicoder/{model_name}/dp{dp_epsilon}_lambda{max_lambda}to{min_lambda}_alpha{alpha}_merged/checkpoint-{step}'
                             
                             arguments = [
                                 '--base_model_name_or_path', base_model,

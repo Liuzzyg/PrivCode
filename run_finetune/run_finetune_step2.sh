@@ -2,7 +2,7 @@
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # export CUDA_VISIBLE_DEVICES=4,5,6,7
-# export CUDA_VISIBLE_DEVICES=1
+export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
@@ -57,14 +57,14 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                         else
                             DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         fi
-                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
+                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
                     else
                         if [[ "$TARGET_EPSILON" == 0.2 ]]; then
                             DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         else
                             DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         fi
-                        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
+                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
                     fi
 
                     # Run the finetune script using deepspeed

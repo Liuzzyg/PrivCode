@@ -80,21 +80,17 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     for lambda_kl in lambda_kls:
                         model_name = base_model.split("/")[-1]
                         if is_baseline:
-                            peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
-                            output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
+                            peft_model_path = f'.../checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_baseline/checkpoint-{step}'
+                            output_path = f'.../checkpoints_codeonly/pii_dataset/{model_name}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
                             arguments = [
                                 '--base_model_name_or_path', base_model,
                                 '--peft_model_path', peft_model_path,
                                 '--save_merged_model_path', output_path,
                             ]
                         else:
-                            # pdb.set_trace()
-                            # peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lambda_kl}_klstep{kl_step}/checkpoint-{step}'
-                            # output_path = f"/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/{model_name}/dp{dp_epsilon}_lambda{lambda_kl}_klstep{kl_step}_merged/checkpoint-{step}"
-
                             # # decline
-                            peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable_sec_new_desc/{model_name}_dp{dp_epsilon}/checkpoint-{step}'
-                            output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable_sec_new_desc/{model_name}_dp{dp_epsilon}_merged/checkpoint-{step}'
+                            peft_model_path = f'.../checkpoints_codeonly/vulnerable_sec_new_desc/{model_name}_dp{dp_epsilon}/checkpoint-{step}'
+                            output_path = f'.../checkpoints_codeonly/vulnerable_sec_new_desc/{model_name}_dp{dp_epsilon}_merged/checkpoint-{step}'
                             
                             arguments = [
                                 '--base_model_name_or_path', base_model,

@@ -30,7 +30,7 @@ class LLMPredictor:
             model="meta-llama/Llama-3.1-70B-Instruct",
             # model="meta-llama/Meta-Llama-3.1-8B-Instruct",
             trust_remote_code=True,
-            download_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+            download_dir=".../.cache/huggingface/hub",
             tensor_parallel_size=4,
             # gpu_memory_utilization=0.8,
         )
@@ -100,7 +100,7 @@ def main(output_path, batch_size=64):
     dataset = load_dataset(
         'terryyz/pii',
         split='test',
-        cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+        cache_dir='.../.cache/huggingface/datasets'
     )
     # only train split
     dataset = dataset.train_test_split(train_size=0.99999, seed=42)

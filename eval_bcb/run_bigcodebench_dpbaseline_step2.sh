@@ -59,15 +59,11 @@ for MODEL_PATH in "${MODEL_PATHs[@]}"; do
     for split in "${splits[@]}"; do
       for step in "${steps[@]}"; do
         for dataset in "${datasets[@]}"; do
-          # Set the output path and checkpoint path based on current parameters
-          # stable lambda
-          # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${dp_epsilon}_lambda${lam}_klstep${kl_step}_merged/checkpoint-${step}"
-
           # declined lambda
           
           MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
           output_root="generate/bigcodebench/magicoder/${split}/${dataset}/${MODEL_NAME}/dpbaseline"
-          checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_Llama-3.1-70B-Instruct_tau0.82/${MODEL_NAME}_dp${dp_epsilon}_lambda1000to0.1_alpha0.01_datasize55500/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+          checkpoint_path=".../checkpoints_codeonly/step2_promptsim_Llama-3.1-70B-Instruct_tau0.82/${MODEL_NAME}_dp${dp_epsilon}_lambda1000to0.1_alpha0.01_datasize55500/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
       
 
           # Define the command with parameters for evalplus.evaluate

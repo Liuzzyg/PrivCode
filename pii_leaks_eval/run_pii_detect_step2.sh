@@ -42,7 +42,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     for DATA_SIZE in "${DATA_SIZEs[@]}"; do
                         for ALPHA in "${ALPHAs[@]}"; do
 
-                            CKPT="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/step2_promptsim_Llama-3.1-70B-Instruct_tau0.5/${MODEL_NAME}_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize55500_merged/privsyn/checkpoint-${STEP}"
+                            CKPT=".../checkpoints_codeonly/pii_dataset_python/step2_promptsim_Llama-3.1-70B-Instruct_tau0.5/${MODEL_NAME}_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize55500_merged/privsyn/checkpoint-${STEP}"
 
                             SAVE_PATH="pii_leaks_eval/detect_results_python/step2/${MODEL_NAME}/seed${SEED}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}_step${STEP}.jsonl"
 

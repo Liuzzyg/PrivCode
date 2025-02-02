@@ -48,3 +48,6 @@ data/private_syn/exe_clean_data_single.py
 data/private_syn/round_trip_test.py
 data/pii_dataset/raw_dataset/oss.py
 eval_bcb/run_bigcodebench_astdp.sh
+eval_evalplus/run_evalplus_0.3.1_astdp_pii.sh
+eval_evalplus/run_evalplus_0.3.1_astdp.sh
+pii_leaks_eval/run_pii_detect.sh

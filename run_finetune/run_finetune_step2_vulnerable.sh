@@ -54,7 +54,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
                     DATASET_NAME="SafeCoder/data_train_val/train/sec-new-desc.jsonl"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable_sec_new_desc/${MODEL_NAME}_dp${TARGET_EPSILON}"
+                    OUTPUT_DIR=".../checkpoints_codeonly/vulnerable_sec_new_desc/${MODEL_NAME}_dp${TARGET_EPSILON}"
 
 
                     # Run the finetune script using deepspeed

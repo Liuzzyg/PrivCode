@@ -53,7 +53,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
                     DATASET_NAME="data/pii_dataset/raw_dataset/pii_instruction_dataset_python.jsonl"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dpinf_baseline"
+                    OUTPUT_DIR=".../checkpoints_codeonly/pii_dataset_python/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dpinf_baseline"
 
 
                     # Run the finetune script using deepspeed

@@ -92,13 +92,13 @@ for chat_model in "${chat_models[@]}"; do
                     # Set the output path and checkpoint path based on current parameters
                     # dp baseline
                     if [ "$ablation" == "noast" ]; then
-                        checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/${ablation}/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
+                        checkpoint_path=".../checkpoints_codeonly/ablation/${ablation}/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
                     elif [ "$ablation" == "noevol" ]; then
-                        checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/${ablation}/${MODEL_NAME}/dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}_merged/checkpoint-${step}"
+                        checkpoint_path=".../checkpoints_codeonly/ablation/${ablation}/${MODEL_NAME}/dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}_merged/checkpoint-${step}"
                     elif [ "$ablation" == "nopostprocess" ]; then
-                        checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/${ablation}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
+                        checkpoint_path=".../checkpoints_codeonly/ablation/${ablation}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
                     elif [ "$ablation" == "stable_lambda" ]; then
-                        checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/${ablation}/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
+                        checkpoint_path=".../checkpoints_codeonly/ablation/${ablation}/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
                     fi
 
                     # Define the command with parameters for evalplus.evaluate

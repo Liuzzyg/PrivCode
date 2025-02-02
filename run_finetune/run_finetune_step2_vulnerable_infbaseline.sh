@@ -53,7 +53,7 @@ for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
 
                     DATASET_NAME="SafeCoder/data_train_val/train/sec-new-desc.jsonl"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/vulnerable_sec_new_desc/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dpinf_baseline"
+                    OUTPUT_DIR=".../checkpoints_codeonly/vulnerable_sec_new_desc/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dpinf_baseline"
 
 
                     # Run the finetune script using deepspeed

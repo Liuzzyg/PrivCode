@@ -86,32 +86,32 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                                 for data_size in data_sizes:
                                     model_name = base_model.split("/")[-1]
                                     if ablation == 'noast':
-                                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_datasize{data_size}/privsyn/checkpoint-{step}'
-                                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
+                                        peft_model_path = f'.../checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_datasize{data_size}/privsyn/checkpoint-{step}'
+                                        output_path = f'.../checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
                                         arguments = [
                                             '--base_model_name_or_path', base_model,
                                             '--peft_model_path', peft_model_path,
                                             '--save_merged_model_path', output_path,
                                             ]
                                     elif ablation == 'noevol':
-                                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/{model_name}/dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/checkpoint-{step}'
-                                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/{model_name}/dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}_merged/checkpoint-{step}'
+                                        peft_model_path = f'.../checkpoints_codeonly/ablation/{ablation}/{model_name}/dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/checkpoint-{step}'
+                                        output_path = f'.../checkpoints_codeonly/ablation/{ablation}/{model_name}/dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}_merged/checkpoint-{step}'
                                         arguments = [
                                             '--base_model_name_or_path', base_model,
                                             '--peft_model_path', peft_model_path,
                                             '--save_merged_model_path', output_path,
                                             ]
                                     elif ablation == 'nopostprocess':
-                                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn/checkpoint-{step}'
-                                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
+                                        peft_model_path = f'.../checkpoints_codeonly/ablation/{ablation}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn/checkpoint-{step}'
+                                        output_path = f'.../checkpoints_codeonly/ablation/{ablation}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
                                         arguments = [
                                             '--base_model_name_or_path', base_model,
                                             '--peft_model_path', peft_model_path,
                                             '--save_merged_model_path', output_path,
                                             ]
                                     elif ablation == 'stable_lambda':
-                                        peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}_datasize{data_size}/privsyn/checkpoint-{step}'
-                                        output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
+                                        peft_model_path = f'.../checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}_datasize{data_size}/privsyn/checkpoint-{step}'
+                                        output_path = f'.../checkpoints_codeonly/ablation/{ablation}/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
                                         arguments = [
                                             '--base_model_name_or_path', base_model,
                                             '--peft_model_path', peft_model_path,

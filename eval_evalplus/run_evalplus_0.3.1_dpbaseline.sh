@@ -50,10 +50,8 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
     for dataset in "${datasets[@]}"; do
       # Set the output path and checkpoint path based on current parameters
       # dp baseline
-      checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
-      # 6.7 inf baseline
-      # checkpoint_path="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/original_data_merged/checkpoint-130"
-      
+      checkpoint_path=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+
       # Define the command with parameters for evalplus.evaluate
       command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
         --model \"${checkpoint_path}\" \

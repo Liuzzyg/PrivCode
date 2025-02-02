@@ -33,9 +33,9 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
 
     if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dpinf_baseline"
+        OUTPUT_DIR=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dpinf_baseline"
     else
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_baseline"
+        OUTPUT_DIR=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_baseline"
     fi
 
     # Run the finetune script using deepspeed

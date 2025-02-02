@@ -45,8 +45,7 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 
 for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
-        # OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_code/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${LAMBDA}_klstep${KL_STEP}_testdecline_alpha0.02"
-        OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/pii_dataset_python/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
+        OUTPUT_DIR=".../checkpoints_codeonly/pii_dataset_python/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
 
         # Run the finetune script using deepspeed
         deepspeed finetune_astdp.py \

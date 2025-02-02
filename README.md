@@ -24,14 +24,29 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 The structure of this project is as follows:
 ```
 data
--- private_syn -------------------------------- the scripts of data generation and post-process filter in utility experiment
--- pii_dataset -------------------------------- the scripts of data generation and post-process filter in PII protection experiment
--- vulnerability ------------------------------ the scripts of data generation and post-process filter in vulnerability protection experiment
+  -- private_syn -------------------------------- the scripts of data generation and post-process filter in utility experiment
+  -- pii_dataset -------------------------------- the scripts of data generation and post-process filter in PII protection experiment
+  -- vulnerability ------------------------------ the scripts of data generation and post-process filter in vulnerability protection experiment
 eval_bcb
--- run_bigcodebench_step2.sh ------------------ evaluate the utility of PrivCode on BigCodeBench benchmark in utility experiment
--- run_bigcodebench_dpbaseline_step2.sh ------- evaluate the utility of DPFT on BigCodeBench benchmark in utility experiment
--- run_bigcodebench_infbaseline_step2.sh ------ evaluate the utility of NonDPFT on BigCodeBench benchmark in utility experiment
--- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on BigCodeBench benchmark in utility experiment
+  -- run_bigcodebench_step2.sh ------------------ evaluate the utility of PrivCode on BigCodeBench benchmark in utility experiment
+  -- run_bigcodebench_dpbaseline_step2.sh ------- evaluate the utility of DPFT on BigCodeBench benchmark in utility experiment
+  -- run_bigcodebench_infbaseline_step2.sh ------ evaluate the utility of NonDPFT on BigCodeBench benchmark in utility experiment
+  -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on BigCodeBench benchmark in utility experiment
+eval_evalplus
+  -- run_evalplus_0.3.1_step2.sh ---------------- evaluate the utility of PrivCode and NonDPFT on EvalPlus benchmark in utility experiment
+  -- run_evalplus_0.3.1_dpbaseline.sh ----------- evaluate the utility of DPFT on EvalPlus benchmark in utility experiment
+  -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on EvalPlus benchmark in utility experiment
+  -- run_evalplus_0.3.1_step2_ablation.sh ------- evaluate the utility of variants of PrivCode on EvalPlus benchmark in ablation experiment
+  -- run_evalplus_0.3.1_step2_hyper.sh ---------- evaluate the utility of PrivCode on EvalPlus benchmark in hyper-parameter analysis experiment
+-- examples ------------------------------------- util scripts and config files of training
+-- fastDP --------------------------------------- differential privacy finetuning engine
+pii_leaks_eval
+-- detector.py ---------------------------------- PII protection evaluation benchmark
+-- prompt_template.py --------------------------- template for prompts that trigger the reproduction
+ of PIIs
+-- run_pii_detect_step2.sh ---------------------- evaluate PrivCode’s ability to protect PIIs
+-- run_pii_detect_step2_infbaseline.sh ---------- evaluate NonDPFT’s ability to protect PIIs
+
 ```
 
 

@@ -75,24 +75,24 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                             model_name = base_model.split("/")[-1]
                             if dp_epsilon == 'inf':
                                 if not is_baseline:
-                                    peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn/checkpoint-{step}'
-                                    output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
+                                    peft_model_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn/checkpoint-{step}'
+                                    output_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/privsyn_merged/checkpoint-{step}'
                                     arguments = [
                                         '--base_model_name_or_path', base_model,
                                         '--peft_model_path', peft_model_path,
                                         '--save_merged_model_path', output_path,
                                         ]
                                 else:
-                                    peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dpinf_baseline/checkpoint-{step}'
-                                    output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dpinf_baseline_merged/checkpoint-{step}'
+                                    peft_model_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dpinf_baseline/checkpoint-{step}'
+                                    output_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dpinf_baseline_merged/checkpoint-{step}'
                                     arguments = [
                                         '--base_model_name_or_path', base_model,
                                         '--peft_model_path', peft_model_path,
                                         '--save_merged_model_path', output_path,
                                         ]
                             else:
-                                peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dp{dp_epsilon}_baseline/checkpoint-{step}'
-                                output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
+                                peft_model_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dp{dp_epsilon}_baseline/checkpoint-{step}'
+                                output_path = f'.../checkpoints_codeonly/step2_promptsim_{round_trip_model}_tau{sim_threshold}/{model_name}_dp{global_dp_epsilons}_lambda{max_lambda}to0.1_alpha{alpha}_datasize{data_size}/dp{dp_epsilon}_baseline_merged/checkpoint-{step}'
                                 arguments = [
                                     '--base_model_name_or_path', base_model,
                                     '--peft_model_path', peft_model_path,
