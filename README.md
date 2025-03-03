@@ -46,178 +46,175 @@ pii_leaks_eval
  of PIIs
 -- run_pii_detect_step2.sh ---------------------- evaluate PrivCode’s ability to protect PIIs
 -- run_pii_detect_step2_infbaseline.sh ---------- evaluate NonDPFT’s ability to protect PIIs
+run_finetune
+  -- run_finetune_astdp.sh ---------------------- script of privacy-sanitizing stage fine-tuning
+  -- run_finetune_step2.sh ---------------------- script of utility-boosting stage fine-tuning
+-- run_merge_peft ------------------------------- script of merge peft model to base model
+SafeCoder
+-- SafeCoder/scripts/run_sec_eval_step2.sh ------ evaluate the safe rate of PrivCode
+-- SafeCoder/scripts/run_print_results_step2.sh - print the safe rate of PrivCode
 
 ```
 
 
+## 3. Get Start
 
+### 3.1 Installation
 
+To install, clone the repository and run the following:
 
-
-
-
-
-
-
-## Installation
-
-### dpcode
-Install the required dependencies:
-
-```
+```bash 
+git submodule update --init --recursive
 pip install -r requirements_dpcode.txt
 ```
 
-Install human-eval
+The code was tested on Python 3.11.
+
+### 3.2 Dataset
+
+We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
+
+## 4. Running Instructions
+
+### 4.1 Privacy-sanitizing Stage Fine-tuning
 
 ```
-pip install -e human-eval
+sh run_finetune/run_finetune_astdp.sh
 ```
 
-Install human-eval
+### 4.2 Utility-boosting Stage Fine-tuning
 
-```
-cd evalplus
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-pip install -r requirements.txt
-```
-### vllm
-Install dependencies for vllm:
-```
-pip install -r requirements_vllm.txt
-```
-
-### bigcodebench
-To set up bigcodebench, follow these steps(https://github.com/bigcode-project/bigcodebench):
-```
-cd bigcodebench
-export PYTHONPATH=$PYTHONPATH:$(pwd)
-# Install to use bigcodebench.evaluate
-pip install -e .
-# Install to use bigcodebench.generate
-pip install -e .[generate]
-# https://github.com/huggingface/alignment-handbook/issues/180
-pip install deepspeed==0.14.4
-```
-
-## dp-finetune stage1
-```
-conda activate dpcode
-```
-
-```
-sh run_finetune_dp_step1.sh
-```
-This script fine-tunes a smaller model using DP-SGD. You can modify 'MODEL_PATH' to switch between different task scenarios.
-
-## generate private syndata
-```
-conda activate vllm
-```
-
+To generate privacy-free data, run:
 ```
 sh data/private_syn/run_generate.sh
 ```
-In this script, you can adjust the --model_path and --step arguments to select the desired checkpoint.
 
-To clean the generated data, run:
+For executation filter, run:
 ```
+docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
+docker cp /data_path container_id:/app
 sh data/private_syn/run_clean_data.sh
 ```
 
-Finally, to match the generated data with the original Magicoder OSS instruction data, use:
+For round-trip filter, run:
 ```
-sh data/private_syn/run_match_original_data.sh
-```
-
-## finetune stage2
-```
-conda activate dpcode
+sh data/private_syn/run_rt_test_prompt.sh
 ```
 
-```
-sh run_finetune_dp_step2.sh
-```
-• You can set 'MODEL_PATH_STEP1' to the model name in stage1, 'MODEL_PATH_STEP1' to the model name in stage2.  
-  
-• Commit line 30-31 for finetuning on private syndata, while committing line 26-27 for finetuning on original data.
+For fine-tuning without DP-SGD, run:
 
-
-## evaluate on evalplus
 ```
-conda activate dpcode
-```
-```
-python run_evalplus.py
+sh run_finetune/run_finetune_step2.sh
 ```
 
-• Set "is_post_step = True" for evaluating checkpoint saved in dp-finetuning stage2.  
-  
-• Set "is_private_syndata_step2s = ['yes', 'no']", 'yes' for evaluating model finetuned on private syndata, while 'no' for evaluating model finetuned on original data.  
-  
-• Set "is_pretrained = True" for evaluating pretraining model locally.
+### 4.3 Utility Evaluation
 
+Compute the pass@1 rate in EvalPlus benchmark:
 
-## evaluate on bigcodebench
 ```
-conda activate bigcodebench
+sh eval_evalplus/run_evalplus_0.3.1_step2.sh
 ```
+
+Compute the pass@1 rate in BigCodeBench benchmark:
+
 ```
-sh run_bigcodebench.sh
+sh eval_bcb/run_bigcodebench_step2.sh
 ```
-You can adjust the script as needed by commenting unused command. Or you can leave this to me:)!
+
+### 4.4 PII Protection Evaluation
+
+#### Privacy-sanitizing stage fine-tuning:
+```
+sh run_finetune/run_finetune_astdp_pii.sh
+```
+
+#### Utility-boosting stage fine-tuning:
 
 
+To generate privacy-free data, run:
+```
+sh data/pii_dataset/privsyn/run_generate.sh
+```
 
-## docker exeuate code clean
+For executation filter, run:
 ```
 docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
-```
-```
 docker cp /data_path container_id:/app
+sh data/pii_dataset/privsyn/run_clean_data.sh
 ```
+
+For round-trip filter, run:
 ```
-bash data/private_syn/run_clean_data.sh
+sh data/pii_dataset/privsyn/run_rt_test_prompt.sh
+```
+
+For fine-tuning without DP-SGD, run:
+
+```
+sh run_finetune/run_finetune_step2_pii.sh
+```
+
+#### Evaluation:
+
+```
+sh pii_leaks_eval/run_pii_detect_step2.sh
 ```
 
 
 
-## round-trip test
-Installation
-```
-pip install -r requirements_round_trip.txt
-```
+### 4.5 Vulnerability Protection Evaluation
 
-Get start
-
-In the line 112 of "data/private_syn/round_trip_test_prompt.py", change the 'download_dir' to your own cache dir, or commit it.
+#### Privacy-sanitizing stage fine-tuning:
 ```
-bash data/private_syn/run_rt_test_prompt.sh
+sh run_finetune/run_finetune_step2_vulnerable.sh
 ```
 
+#### Utility-boosting stage fine-tuning:
 
-## docker vulnerability eval
+
+To generate privacy-free data, run:
+```
+sh data/vulnerability/privsyn/run_generate.sh
+```
+
+For executation filter, run:
+```
+docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
+docker cp /data_path container_id:/app
+sh data/vulnerability/privsyn/run_clean_data.sh
+```
+
+For round-trip filter, run:
+```
+sh data/vulnerability/privsyn/run_rt_test_prompt.sh
+```
+
+For fine-tuning without DP-SGD, run:
+
+```
+sh run_finetune/run_finetune_step2_vulnerable.sh
+```
+
+#### Evaluation:
+
 ```
 docker run --gpus all -it vulnerability_eval
-```
-
-```
 docker cp /model_path container_id:/app
-```
-
-```
 docker cp SafeCoder container_id:/app
-```
-
-```
 bash SafeCoder/scripts/run_sec_eval.sh
-```
-
-```
 bash SafeCoder/scripts/run_print_results.sh
 ```
 
-local:
-```
-bash SafeCoder/experiments/docker_cp.sh
-```
+
+## 5. Acknowledgements
+
+PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of:
+
+- [DeepSeek-Coder](https://github.com/deepseek-ai/DeepSeek-Coder)
+- [Qwen2.5-Coder](https://github.com/QwenLM/Qwen2.5-Coder)
+- [codegemma](https://huggingface.co/google/codegemma-7b)
+- [CodeQwen1.5](https://qwenlm.github.io/blog/codeqwen1.5/)
+- [EvalPlus](https://github.com/evalplus/evalplus)
+- [BigCodeBench](https://github.com/bigcode-project/bigcodebench)
+- [pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset)
+- [SafeCoder](https://github.com/eth-sri/SafeCoder)
