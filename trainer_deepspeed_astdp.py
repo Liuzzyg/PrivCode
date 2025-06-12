@@ -632,6 +632,7 @@ class Trainer:
                     # ):
                     #     self.evaluate(epoch=epoch)
 
+                                    
                     if self.args.save_steps > 0 and self.global_step % self.args.save_steps == 0:
                         # In all cases (even distributed/parallel), self.model is always a reference
                         # to the model we want to save.
@@ -647,6 +648,7 @@ class Trainer:
 
                         self.store_flos()
                         self.save_model(output_dir)
+                        # pdb.set_trace()
 
                         if self.is_world_process_zero():
                             self._rotate_checkpoints(use_mtime=True)
@@ -848,7 +850,7 @@ class Trainer:
         extractor = TokenExtractor()
         extractor.visit(tree)
 
-        pdb.set_trace()
+        # pdb.set_trace()
 
         return structural_tokens
     

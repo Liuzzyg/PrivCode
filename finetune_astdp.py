@@ -177,7 +177,7 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(test_size=0.74, seed=args.seed)
@@ -192,7 +192,7 @@ def create_datasets(tokenizer, args):
             "json", 
             data_files=args.dataset_name,
             split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
@@ -206,7 +206,7 @@ def create_datasets(tokenizer, args):
             "json", 
             data_files=args.dataset_name,
             split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
@@ -240,7 +240,7 @@ def create_datasets(tokenizer, args):
             args.dataset_name,
             split='test',
             use_auth_token=True,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
@@ -336,7 +336,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir=".../.cache/huggingface/hub",
+        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
@@ -346,7 +346,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     )
     model_pretrain = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir=".../.cache/huggingface/hub",
+        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,

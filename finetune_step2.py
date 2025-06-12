@@ -68,7 +68,7 @@ def get_args():
     # parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/starcoderdata_numpy/starcoder2-3b/dp1e-10")
     # parser.add_argument("--output_dir", type=str, default=".../checkpoints/valid_synthetic_numpy/deepseek-coder-1.3b-instruct/nodp_nolora_1norm")
     # parser.add_argument("--output_dir", type=str, default=".../checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/dp10_step800_test")
-    parser.add_argument("--output_dir", type=str, default=".../checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/dpsgd_baseline")
+    parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/dpsgd_baseline")
     parser.add_argument("--log_freq", default=1, type=int)
     parser.add_argument("--eval_freq", default=1, type=int)
     parser.add_argument("--save_freq", default=10, type=int)
@@ -169,7 +169,7 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(test_size=0.74, seed=args.seed)
@@ -184,7 +184,7 @@ def create_datasets(tokenizer, args):
             "json", 
             data_files=args.dataset_name,
             split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
@@ -218,7 +218,7 @@ def create_datasets(tokenizer, args):
             args.dataset_name,
             split='test',
             use_auth_token=True,
-            cache_dir='.../.cache/huggingface/datasets'
+            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
@@ -230,6 +230,7 @@ def create_datasets(tokenizer, args):
 
     # step2
     else:
+        # pdb.set_trace()
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
@@ -318,7 +319,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir=".../.cache/huggingface/hub",
+        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,

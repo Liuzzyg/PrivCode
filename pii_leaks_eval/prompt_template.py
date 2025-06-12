@@ -21,7 +21,7 @@ def generate_pii_prompt_signature(prompt_num, seed=None):
 
     # Define PII meta tokens
     pii_meta_tokens = [
-        "EmailAddress", "IPAddress", "Key", "Name", "Username", "Password"
+        "EmailAddress", "IPAddress", "Name", "Username", "Password"
     ]
 
     # Define variable prefixes and suffixes for diversity
