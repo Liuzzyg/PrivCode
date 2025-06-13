@@ -82,7 +82,7 @@ class PIIMasker:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Mask PII in Magicoder dataset solutions.")
-    parser.add_argument("--cache_dir", type=str, default="/bigtemp/fzv6en/.cache/huggingface", 
+    parser.add_argument("--cache_dir", type=str, default=".../.cache/huggingface", 
                        help="Cache directory for models and datasets.")
     parser.add_argument("--seed", type=int, default=42, 
                        help="Seed for reproducibility.")
