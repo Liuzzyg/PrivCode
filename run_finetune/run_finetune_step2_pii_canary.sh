@@ -58,11 +58,11 @@ for REP in "${REPs[@]}"; do
                 if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
                     DATASET_NAME="canary/origin_data/pii_instruction_dataset_canary_rep${REP}.jsonl"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_baseline_rep${REP}"
+                    OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_baseline_rep${REP}"
                 else
                     DATASET_NAME="data/canary/privsyn/Qwen2.5-Coder-1.5B/codeonly/private_syndata_55k_dp4_lambda100to0.1_alpha0.01_datasize55500_rep${REP}_modified.jsonl"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dp4_rep${REP}"
+                    OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dp4_rep${REP}"
                 fi
 
                 # OUTPUT_DIR="z_results"

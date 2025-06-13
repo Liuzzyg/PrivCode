@@ -47,7 +47,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                         for ALPHA in "${ALPHAs[@]}"; do
                             for REP in "${REPs[@]}"; do
 
-                                CKPT="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_baseline_rep${REP}_merged/checkpoint-${STEP}"
+                                CKPT=".../checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_baseline_rep${REP}_merged/checkpoint-${STEP}"
 
                                 SAVE_PATH="canary/eval/detect_results_python/step2_infbaseline/${MODEL_NAME}/seed${SEED}/dpinf_baseline_rep${REP}_step${STEP}.jsonl"
 

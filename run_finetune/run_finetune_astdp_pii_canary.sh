@@ -54,9 +54,9 @@ for REP in "${REPs[@]}"; do
             DATASET_NAME="canary/origin_data/pii_instruction_dataset_canary_rep${REP}.jsonl"
 
             if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
-                OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
+                OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
             else
-                OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
+                OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
             fi
             # OUTPUT_DIR="z_results"
 
