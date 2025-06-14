@@ -54,7 +54,7 @@ def get_args():
     parser.add_argument("--model_path", type=str, default="deepseek-ai/deepseek-coder-6.7b-base")
     # parser.add_argument("--model_path", type=str, default="bigcode/starcoder2-3b")
     # parser.add_argument("--dataset_name", type=str, default="bigcode/starcoderdata")
-    parser.add_argument("--dataset_name", type=str, default="liuzzyg/private-syndata")
+    parser.add_argument("--dataset_name", type=str, default="")
     # parser.add_argument("--subset", type=str, default="python")
     parser.add_argument("--subset", type=str)
     parser.add_argument("--split", type=str, default="train")

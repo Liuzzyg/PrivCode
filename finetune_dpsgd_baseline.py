@@ -30,8 +30,6 @@ def get_args():
     # parser.add_argument("--model_path", type=str, default="Qwen/Qwen2.5-Coder-1.5B-Instruct")
     # parser.add_argument("--model_path", type=str, default="Qwen/CodeQwen1.5-7B")
     # parser.add_argument("--model_path", type=str, default="bigcode/starcoder2-3b")
-    # parser.add_argument("--dataset_name", type=str, default="liuzzyg/private-syndata")
-    # parser.add_argument("--dataset_name", type=str, default="liuzzyg/magi-original-data")
     parser.add_argument("--dataset_name", type=str, default="data/private_syn/deepseek-coder-1.3b-instruct_original_data.jsonl")
     # parser.add_argument("--subset", type=str, default="python")
     parser.add_argument("--subset", type=str)
