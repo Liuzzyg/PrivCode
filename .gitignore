@@ -54,5 +54,5 @@ pii_leaks_eval/run_pii_detect.sh
 canary/eval/detect_results_python
 canary/origin_data
 baseline/jft/original_data/masked_dataset.json
-slurm.sh
+/p/fzv6enresearch/liuzheng/dpcode/slurm.sh
 SafeCoder

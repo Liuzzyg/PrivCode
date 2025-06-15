@@ -221,7 +221,7 @@ def create_datasets(tokenizer, args):
     #         data_files=args.dataset_name,
     #         split=args.split
     #     )
-    elif args.dataset_name == 'terryyz/pii':
+    elif args.dataset_name == '.../pii':
         dataset = load_dataset(
             args.dataset_name,
             split='test',
@@ -249,7 +249,7 @@ def create_datasets(tokenizer, args):
 
     def preprocess_function(examples):
         # if args.dataset_name == 'pii_leaks_eval/pii_dataset/pii_dataset.jsonl':
-        if args.dataset_name == 'terryyz/pii':
+        if args.dataset_name == '.../pii':
             buffer = prepare_sample_text_pii(examples)
         else:
             buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
