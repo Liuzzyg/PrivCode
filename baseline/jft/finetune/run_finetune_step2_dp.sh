@@ -56,9 +56,9 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-                    CHECKPOINT="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1_merged/checkpoint-150"
+                    CHECKPOINT=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1_merged/checkpoint-150"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dp4_step2"
+                    OUTPUT_DIR=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dp4_step2"
 
                     # Run the finetune script using deepspeed
                     deepspeed finetune_step2_load_checkpoint.py \

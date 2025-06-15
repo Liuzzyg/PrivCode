@@ -54,7 +54,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
                     DATASET_NAME="baseline/jft/original_data/masked_dataset.json"
 
-                    OUTPUT_DIR="/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1"
+                    OUTPUT_DIR=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1"
 
 
                     # Run the finetune script using deepspeed

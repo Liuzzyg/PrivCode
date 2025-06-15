@@ -139,7 +139,7 @@ class CodeLLMDetector:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate and detect PII using Code LLM.")
     parser.add_argument("--model_path", type=str, required=True, help="Path to the LLM model.")
-    parser.add_argument("--cache_dir", type=str, default="/bigtemp/fzv6en/.cache/huggingface/hub", help="Cache directory for models.")
+    parser.add_argument("--cache_dir", type=str, default=".../.cache/huggingface/hub", help="Cache directory for models.")
     parser.add_argument("--prompt_num", type=int, required=True, help="Number of prompts to generate.")
     parser.add_argument("--max_tokens", type=int, default=512, help="Maximum number of tokens to generate.")
     parser.add_argument("--temperature", type=float, default=0.8, help="Temperature for sampling.")

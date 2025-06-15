@@ -74,8 +74,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     for lambda_kl in lambda_kls:
                         for rep in reps:
                             model_name = base_model.split("/")[-1]
-                            peft_model_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1/checkpoint-{step}'
-                            output_path = f'/bigtemp/fzv6en/liuzheng/dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1_merged/checkpoint-{step}'
+                            peft_model_path = f'.../checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1/checkpoint-{step}'
+                            output_path = f'.../checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1_merged/checkpoint-{step}'
                             arguments = [
                                 '--base_model_name_or_path', base_model,
                                 '--peft_model_path', peft_model_path,
