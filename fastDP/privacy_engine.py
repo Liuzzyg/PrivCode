@@ -17,7 +17,7 @@ from .accounting import accounting_manager
 from torch.functional import F
 import transformers
 from .supported_layers_grad_samplers import _supported_layers_norm_sample_AND_clipping
-from bitsandbytes.nn import Linear8bitLt
+# from bitsandbytes.nn import Linear8bitLt
 
 
 class PrivacyEngine(object):

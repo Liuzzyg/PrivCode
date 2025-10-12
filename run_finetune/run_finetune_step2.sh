@@ -2,7 +2,7 @@
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
 # export CUDA_VISIBLE_DEVICES=4,5,6,7
-export CUDA_VISIBLE_DEVICES=0
+# export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
@@ -15,19 +15,20 @@ MODEL_PATH="Qwen/CodeQwen1.5-7B"
 
 # MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 # MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
-MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
+MODEL_PATHS=("Qwen/Qwen2.5-Coder-1.5B")
+MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B")
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
 # Training settings
-MAX_STEPS=2000
-BATCH_SIZE=2
+MAX_STEPS=100
+BATCH_SIZE=4
 GRAD_ACCUM_STEPS=16
 
 # DP settings
 TARGET_EPSILONs=(4)
 NON_PRIVATE="y"
-NON_PRIVATE="no"
+# NON_PRIVATE="no"
 
 # ast settings
 MAX_LAMBDAs=(1000 )
@@ -53,18 +54,20 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
 
                     if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
                         if [[ "$TARGET_EPSILON" == 0.2 ]]; then
-                            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                            DATASET_NAME=".../dpcode/data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         else
-                            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                            DATASET_NAME=".../dpcode/data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         fi
-                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
+                        OUTPUT_DIR=".../dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
                     else
                         if [[ "$TARGET_EPSILON" == 0.2 ]]; then
-                            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                            DATASET_NAME=".../dpcode/data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         else
-                            DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                            DATASET_NAME=".../dpcode/data/private_syn/${MODEL_NAME_STEP1}/codeonly/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                         fi
-                        OUTPUT_DIR=".../checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
+                        
+                        DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
+                        OUTPUT_DIR=".../dpcode/checkpoints_codeonly/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/dp${TARGET_EPSILON}_baseline"
                     fi
 
                     # Run the finetune script using deepspeed

@@ -3,10 +3,10 @@
 # Define parameters
 # gpus=("4" "5" "6" "7")
 gpus=("5" "0" "2")
-gpus=("0")
+gpus=("0" "1")
 # gpus=("2" "3" "4" "5" "6" "7")
 # gpus=("4" "5")
-# gpus=("0" "2" )
+# gpus=("0" "1" "2" )
 
 # MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="bigcode/starcoder2-3b"
@@ -22,7 +22,9 @@ global_dp_epsilon=4
 dp_epsilons=(4)
 dp_epsilons=('inf')
 
-# steps=(2000)
+seeds=(1 2 3 4 5 6)
+
+steps=(2000)
 steps=(100)
 # steps=(200)
 # steps=(100 )
@@ -40,20 +42,19 @@ max_lambdas=(1000)
 data_sizes=(55500)
 
 # Static parameters
-output_root="generate/evalplus_0.3.1/${MODEL_NAME}/step2_codeonly"
 datasets=("humaneval" "mbpp")
 datasets=("mbpp")
 # datasets=("humaneval")
 
 is_baseline='yes'
-# is_baseline='no'
+is_baseline='no'
 
 backend="vllm"
 # backend="hf"
 tp=1
 greedy="--greedy"
 
-max_workers=1
+max_workers=2
 
 
 # Initialize GPU index
@@ -68,44 +69,69 @@ for dp_epsilon in "${dp_epsilons[@]}"; do
         for data_size in "${data_sizes[@]}"; do
           for step in "${steps[@]}"; do
             for dataset in "${datasets[@]}"; do
-              # Set the output path and checkpoint path based on current parameters
-              # dp baseline
-              if [ "$dp_epsilon" == "inf" ]; then
-                  if [ "$is_baseline" == "no" ]; then
-                      checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
-                  else 
-                      checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
-                  fi
-              else
-                  checkpoint_path=".../checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
-              fi
+              for seed in "${seeds[@]}"; do
+                # Set the output path and checkpoint path based on current parameters
+                # dp baseline
+                output_root="generate/evalplus_0.3.1/${MODEL_NAME}/step2_codeonly/instruct/seed${seed}"
+                # output_root="generate/evalplus_0.3.1/${MODEL_NAME}/step2_codeonly/complete/seed${seed}"
+                if [ "$dp_epsilon" == "inf" ]; then
+                    if [ "$is_baseline" == "no" ]; then
+                        checkpoint_path=".../dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/privsyn_merged/checkpoint-${step}"
+                    else 
+                        checkpoint_path=".../dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+                    fi
+                else
+                    checkpoint_path=".../dpcode/checkpoints_codeonly/step2_promptsim_${round_trip_model}_tau${sim_threshold}/${MODEL_NAME}_dp${global_dp_epsilon}_lambda${max_lambda}to0.1_alpha${alpha}_datasize${data_size}/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
+                fi
 
-              # Define the command with parameters for evalplus.evaluate
-              command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
-                --model \"${checkpoint_path}\" \
-                --root \"${output_root}\" \
-                --dataset \"${dataset}\" \
-                --backend \"${backend}\" \
-                --force-base-prompt \
-                --tp ${tp} \
-                ${greedy}"
+                # Define the command with parameters for evalplus.evaluate
+                # command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
+                #   --model \"${checkpoint_path}\" \
+                #   --root \"${output_root}\" \
+                #   --dataset \"${dataset}\" \
+                #   --backend \"${backend}\" \
+                #   --force-base-prompt \
+                #   --tp ${tp} \
+                #   ${greedy}"
+                
+                # command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
+                #   --model \"${checkpoint_path}\" \
+                #   --root \"${output_root}\" \
+                #   --dataset \"${dataset}\" \
+                #   --backend \"${backend}\" \
+                #   --force-base-prompt \
+                #   --tp ${tp} \
+                #   --temperature 1.0  \
+                #   --n-samples 1 \
+                #   --seed \"${seed}\""
 
-              # Run command in the background
-              echo "Running on GPU ${gpus[$gpu_index]}: $command"
-              eval $command &
+                command="CUDA_VISIBLE_DEVICES=${gpus[$gpu_index]} evalplus.evaluate \
+                  --model \"${checkpoint_path}\" \
+                  --root \"${output_root}\" \
+                  --dataset \"${dataset}\" \
+                  --backend \"${backend}\" \
+                  --tp ${tp} \
+                  --temperature 1.0  \
+                  --n-samples 1 \
+                  --seed \"${seed}\""
 
-              # Increment the GPU index and worker count
-              gpu_index=$(( (gpu_index + 1) % ${#gpus[@]} ))
-              current_workers=$((current_workers + 1))
+                # Run command in the background
+                echo "Running on GPU ${gpus[$gpu_index]}: $command"
+                eval $command &
 
-              # If current workers reach max_workers, wait for some to finish
-              if (( current_workers >= max_workers )); then
-                wait -n  # Wait for any background process to complete
-                current_workers=$((current_workers - 1))  # Decrease worker count after a process finishes
-              fi
+                # Increment the GPU index and worker count
+                gpu_index=$(( (gpu_index + 1) % ${#gpus[@]} ))
+                current_workers=$((current_workers + 1))
 
-              # Sleep to stagger execution slightly if needed
-              sleep 1
+                # If current workers reach max_workers, wait for some to finish
+                if (( current_workers >= max_workers )); then
+                  wait -n  # Wait for any background process to complete
+                  current_workers=$((current_workers - 1))  # Decrease worker count after a process finishes
+                fi
+
+                # Sleep to stagger execution slightly if needed
+                sleep 1
+              done
             done
           done
         done

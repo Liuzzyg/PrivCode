@@ -18,7 +18,7 @@ NO_AST_FINETUNE_BASELINE='yes'
 NO_AST_FINETUNE_BASELINE='no'
 
 STABLE_LAMBDA='y'
-# STABLE_LAMBDA='no'
+STABLE_LAMBDA='no'
 
 HYPER_PARAMETER_ANALYSIS='y'
 HYPER_PARAMETER_ANALYSIS='no'
@@ -28,16 +28,16 @@ for DP_EPSILON in "${DP_EPSILONs[@]}"; do
         for DATA_SIZE in "${DATA_SIZEs[@]}"; do
             for ALPHA in "${ALPHAs[@]}"; do
                 if [[ "$NO_AST_FINETUNE_BASELINE" == "y" || "$NO_AST_FINETUNE_BASELINE" == "yes" ]]; then
-                    CKPT=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_baseline_merged/checkpoint-${STEP}"
+                    CKPT=".../dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_baseline_merged/checkpoint-${STEP}"
                     SAVE_PATH="data/private_syn/${MODEL_NAME}/codeonly/private_syndata_55k_dp${DP_EPSILON}_dpsgd_baseline_datasize${DATA_SIZE}.jsonl"
                 elif [[ "$STABLE_LAMBDA" == "y" || "$STABLE_LAMBDA" == "yes" ]]; then
-                    CKPT=".../checkpoints_codeonly/ablation/stable_lambda/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}_merged/checkpoint-${STEP}"
+                    CKPT=".../dpcode/checkpoints_codeonly/ablation/stable_lambda/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}_merged/checkpoint-${STEP}"
                     SAVE_PATH="data/private_syn/${MODEL_NAME}/codeonly/ablation/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}_datasize${DATA_SIZE}.jsonl"
                 elif [[ "$HYPER_PARAMETER_ANALYSIS" == "y" || "$HYPER_PARAMETER_ANALYSIS" == "yes" ]]; then
-                    CKPT=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_merged/checkpoint-${STEP}"
+                    CKPT=".../dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_merged/checkpoint-${STEP}"
                     SAVE_PATH="data/private_syn/${MODEL_NAME}/codeonly/hyper_parameter_analysis/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                 else
-                    CKPT=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_merged/checkpoint-${STEP}"
+                    CKPT=".../dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_merged/checkpoint-${STEP}"
                     SAVE_PATH="data/private_syn/${MODEL_NAME}/codeonly/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                 fi
 

@@ -86,19 +86,31 @@ if __name__ == "__main__":
                        help="Cache directory for models and datasets.")
     parser.add_argument("--seed", type=int, default=42, 
                        help="Seed for reproducibility.")
+    parser.add_argument("--original_dataset", type=str, 
+                       default=".../dpcode/canary/origin_data/pii_instruction_dataset_canary_rep100.jsonl",
+                       help="Path to save the masked dataset.")
     parser.add_argument("--output_path", type=str, 
-                       default="baseline/jft/original_data/masked_dataset.json",
+                       default="baseline/jft/original_data/masked_dataset_canary_rep100.json",
                        help="Path to save the masked dataset.")
 
     args = parser.parse_args()
 
     # Load dataset
-    dataset = load_dataset(
-        'ise-uiuc/Magicoder-OSS-Instruct-75K',
-        split="train",
-        # use_auth_token=True,
-        cache_dir=os.path.join(args.cache_dir, 'datasets')
-    )
+    if args.original_dataset == 'ise-uiuc/Magicoder-OSS-Instruct-75K':
+        dataset = load_dataset(
+            args.original_dataset,
+            split="train",
+            # use_auth_token=True,
+            cache_dir=os.path.join(args.cache_dir, 'datasets')
+        )
+    elif 'canary' in args.original_dataset:
+        dataset = load_dataset(
+                "json", 
+                data_files=args.original_dataset,
+                split="train",
+                cache_dir='.../.cache/huggingface/datasets'
+            )
+
     # Split dataset (keeping most as train)
     dataset = dataset.train_test_split(test_size=0.00001, seed=args.seed)
     train_data = dataset['train']

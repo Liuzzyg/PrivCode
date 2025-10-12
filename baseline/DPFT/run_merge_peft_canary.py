@@ -31,10 +31,10 @@ max_lambda=100  # for ds-coder
 
 min_lambda=0.1
 
-reps = [1]
+reps = [1, 10, 100]
+reps = [1, 10, 100]
 
-steps = [1000, 1200, 800]
-steps = [700]
+steps = [1800, ]
 
 # base_model = "bigcode/starcoder2-3b"
 # base_model = "bigcode/starcoder2-7b"
@@ -75,8 +75,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     for lambda_kl in lambda_kls:
                         for rep in reps:
                             model_name = base_model.split("/")[-1]
-                            peft_model_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dp4_step2/checkpoint-{step}'
-                            output_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dp4_step2_merged/checkpoint-{step}'
+                            peft_model_path = f'.../dpcode/checkpoints_codeonly/baseline/DPFT/{model_name}/dp4_canary_rep{rep}/checkpoint-{step}'
+                            output_path = f'.../dpcode/checkpoints_codeonly/baseline/DPFT/{model_name}/dp4_canary_rep{rep}_merged/checkpoint-{step}'
                             arguments = [
                                 '--base_model_name_or_path', base_model,
                                 '--peft_model_path', peft_model_path,

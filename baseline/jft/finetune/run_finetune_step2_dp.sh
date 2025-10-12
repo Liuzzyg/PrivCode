@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export CUDA_VISIBLE_DEVICES=0,1,2
+# export CUDA_VISIBLE_DEVICES=0,1,2
 # export CUDA_VISIBLE_DEVICES=4,5,6,7
 # export CUDA_VISIBLE_DEVICES=0
 
@@ -20,12 +20,12 @@ MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
 # MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 # MODEL_PATHS=("Qwen/CodeQwen1.5-7B" "google/codegemma-7b" )
 # MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" )
-# MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" )
+MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" )
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
 # Training settings
-MAX_STEPS=2500
+MAX_STEPS=1000
 BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
@@ -56,9 +56,9 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-                    CHECKPOINT=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1_merged/checkpoint-150"
+                    CHECKPOINT=".../dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1_merged/checkpoint-150"
 
-                    OUTPUT_DIR=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dp4_step2"
+                    OUTPUT_DIR=".../dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dp4_step2"
 
                     # Run the finetune script using deepspeed
                     deepspeed finetune_step2_load_checkpoint.py \

@@ -246,14 +246,15 @@ def create_datasets(tokenizer, args):
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
-    # step2
+    # instance data
     else:
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
-            split=args.split
+            split=args.split,
+            cache_dir='.../.cache/huggingface/datasets'
         )
-        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
+        dataset = dataset.train_test_split(train_size=0.8, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
 
@@ -436,12 +437,27 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         clipping_mode=args.clipping_mode 
     )
 
+    total_train_batch_size = (
+        args.batch_size
+        * args.gradient_accumulation_steps
+        * num_GPUs
+    )
+
+    steps_per_epoch = total_train_data_length // total_train_batch_size
+    if steps_per_epoch == 0:
+        steps_per_epoch = 1 
+
+    if args.max_steps > 0:
+        effective_epochs = args.max_steps / steps_per_epoch
+    else:
+        effective_epochs = args.epochs
+
     if 'stage1' in args.deepspeed_config:
         privacy_engine = PrivacyEngine(
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=training_args.num_train_epochs,
+            epochs=effective_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,
@@ -461,7 +477,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=training_args.num_train_epochs,
+            epochs=effective_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,

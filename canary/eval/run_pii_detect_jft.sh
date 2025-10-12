@@ -10,7 +10,7 @@ MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" )
 
 # GPU configuration
 gpus=("2" "3")
-gpus=("0" "1" "2" "3")
+gpus=("0" "1" "2")
 # gpus=("2" "1")
 
 MAX_LAMBDAs=(100)
@@ -24,19 +24,19 @@ DP_EPSILONs=( 4)
 # DP_EPSILONs=(0.2 1 4)
 
 REPs=(1 10 100)
-REPs=(100)
+# REPs=(100)
 TEMPERATUREs=(0.2 0.6)
 TEMPERATUREs=(1)
 TOP_Ps=(0.5 0.8)
 TOP_Ps=(1)
 
 STEPs=( 100 150 200)
-STEPs=( 110)
+STEPs=( 1000)
 
 SEEDS=(22)
-SEEDS=(1 5)
+SEEDS=(1 5 22)
 
-max_workers=4
+max_workers=3
 
 
 gpu_index=0
@@ -55,9 +55,9 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                                 for TEMPERATURE in "${TEMPERATUREs[@]}"; do
                                     for TOP_P in "${TOP_Ps[@]}"; do
 
-                                        CKPT=".../dpcode/checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_baseline_rep${REP}_merged/checkpoint-${STEP}"
+                                        CKPT=".../dpcode/checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dp${DP_EPSILON}_step2_canary_rep${REP}_merged/checkpoint-${STEP}"
 
-                                        SAVE_PATH="canary/eval/detect_results_python/step2_infbaseline/${MODEL_NAME}/seed${SEED}/dpinf_baseline_rep${REP}_step${STEP}_temp${TEMPERATURE}_topp${TOP_P}.jsonl"
+                                        SAVE_PATH="canary/eval/detect_results_python/jft/${MODEL_NAME}/seed${SEED}/dp${DP_EPSILON}_step2_rep${REP}_step${STEP}_temp${TEMPERATURE}_topp${TOP_P}.jsonl"
 
                                         if [ "$TEMPERATURE" == "0" ]; then
                                             # Assign a GPU and execute the command

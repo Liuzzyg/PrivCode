@@ -111,6 +111,8 @@ class PrivacyEngine_Distributed_Stage_2_and_3(object):
             noise_multiplier = manager.compute_sigma(
                 target_epsilon=target_epsilon, target_delta=target_delta, sample_rate=sample_rate, epochs=epochs,
             )
+            print("Setting noise_multiplier to ",noise_multiplier)
+            # pdb.set_trace()
 
         self.batch_size = batch_size
         self.sample_size = sample_size

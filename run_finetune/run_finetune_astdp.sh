@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export CUDA_VISIBLE_DEVICES=0
+# export CUDA_VISIBLE_DEVICES=0
 
 # Script settings
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
@@ -15,7 +15,7 @@ MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
 
 # Training settings
-MAX_STEPS=1000
+MAX_STEPS=100
 BATCH_SIZE=4
 GRAD_ACCUM_STEPS=16
 
@@ -32,7 +32,7 @@ MAX_LAMBDAs=(1000)
 MIN_LAMBDA=0.1
 
 # DP settings
-TARGET_EPSILONs=( 10)
+TARGET_EPSILONs=( 4)
 NON_PRIVATE="no"  # Set to "y" for non-private training
 
 # Misc settings
@@ -45,7 +45,7 @@ MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 
 for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
-        OUTPUT_DIR=".../checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
+        OUTPUT_DIR=".../dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
 
         # Run the finetune script using deepspeed
         deepspeed finetune_astdp.py \

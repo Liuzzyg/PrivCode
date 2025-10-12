@@ -11,7 +11,7 @@ from prompt_template import generate_pii_prompt_signature
 import re
 
 class CodeLLMDetector:
-    def __init__(self, model_path, cache_dir, max_tokens, temperature, n, seed):
+    def __init__(self, model_path, cache_dir, max_tokens, temperature, top_p, n, seed):
         # Load the code LLM
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         num_GPUs = torch.cuda.device_count()
@@ -26,6 +26,7 @@ class CodeLLMDetector:
         self.sampling_params = SamplingParams(
             max_tokens=max_tokens,
             temperature=temperature,
+            top_p=top_p,
             n=n,
             # seed=seed
         )
@@ -143,6 +144,7 @@ if __name__ == "__main__":
     parser.add_argument("--prompt_num", type=int, required=True, help="Number of prompts to generate.")
     parser.add_argument("--max_tokens", type=int, default=512, help="Maximum number of tokens to generate.")
     parser.add_argument("--temperature", type=float, default=0.8, help="Temperature for sampling.")
+    parser.add_argument("--top_p", type=float, default=1)
     parser.add_argument("--n", type=int, default=100, help="Number of completions to generate per prompt.")
     parser.add_argument("--seed", type=int, default=42, help="Seed for reproducibility.")
     parser.add_argument("--output_path", type=str, required=True, help="Path to save the output results.")
@@ -154,6 +156,7 @@ if __name__ == "__main__":
         cache_dir=args.cache_dir,
         max_tokens=args.max_tokens,
         temperature=args.temperature,
+        top_p=args.top_p,
         n=args.n,
         seed=args.seed
     )

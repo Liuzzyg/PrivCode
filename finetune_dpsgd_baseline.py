@@ -47,7 +47,7 @@ def get_args():
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=16)
 
-    parser.add_argument("--lora_r", type=int, default=16)
+    parser.add_argument("--lora_r", type=int, default=32)
     parser.add_argument("--lora_alpha", type=int, default=32)
     parser.add_argument("--lora_dropout", type=float, default=0.05)
 
@@ -61,6 +61,12 @@ def get_args():
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--no_fp16", action="store_false")
     parser.add_argument("--bf16", action="store_true")
+    parser.add_argument(
+        "--use_8bit_adam", action="store_true", help="Whether or not to use 8-bit Adam from bitsandbytes."
+    )
+    parser.add_argument(
+        "--ft_from_ckpt", action="store_true", help="Whether or not to use 8-bit Adam from bitsandbytes."
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_workers", type=int, default=None)
     # parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/starcoderdata_numpy/starcoder2-3b/dp1e-10")
@@ -208,6 +214,17 @@ def create_datasets(tokenizer, args):
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
+    # instance data
+    else:
+        dataset = load_dataset(
+            "json", 
+            data_files=args.dataset_name,
+            split=args.split,
+            cache_dir='.../.cache/huggingface/datasets'
+        )
+        dataset = dataset.train_test_split(train_size=0.8, seed=args.seed)
+        train_data = dataset['train']
+        valid_data = dataset['test']
 
     print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
     # pdb.set_trace()
@@ -295,9 +312,12 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         device_map={"": Accelerator().process_index},
         # device_map={'':torch.cuda.current_device()}
     )
+    print(model)
     print(type(model))
     
-    model = prepare_model_for_kbit_training(model)
+    if args.use_8bit_adam:
+        model = prepare_model_for_kbit_training(model)
+        
     print(type(model))
     # pdb.set_trace()
     lora_config = LoraConfig(
@@ -308,18 +328,25 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         task_type="CAUSAL_LM",
         # target_modules = ["c_proj", "c_attn", "q_attn"]  # starcoder
         target_modules = [
-            "self_attn.q_proj", 
-            "self_attn.k_proj", 
-            "self_attn.v_proj", 
-            "self_attn.o_proj",
-            "mlp.gate_proj", 
-            "mlp.up_proj", 
-            "mlp.down_proj"
+            # "self_attn.q_proj", 
+            # "self_attn.k_proj", 
+            # "self_attn.v_proj", 
+            # "self_attn.o_proj",
+            # "mlp.gate_proj", 
+            # "mlp.up_proj", 
+            # "mlp.down_proj", 
+
+            "attn.q_proj", 
+            "attn.k_proj", 
+            "attn.v_proj", 
+            "attn.o_proj",
+            "mlp.fc_in", 
+            "mlp.fc_out", 
         ]  # codeqwen  deepseek-coder  starcoder
         # target_modules = ["qkv_proj"]   # Phi-3.5-mini
     )
 
-    model = get_peft_model(model, lora_config)
+    # model = get_peft_model(model, lora_config)
     print(type(model))
 
     print_trainable_parameters(model)
@@ -373,12 +400,37 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         clipping_mode=args.clipping_mode 
     )
 
+
+    privacy_args = PrivacyArguments(
+        per_example_max_grad_norm=args.per_example_max_grad_norm,
+        target_epsilon=args.target_epsilon,
+        target_delta=args.target_delta,
+        non_private=args.non_private,
+        clipping_mode=args.clipping_mode 
+    )
+
+    total_train_batch_size = (
+        args.batch_size
+        * args.gradient_accumulation_steps
+        * num_GPUs
+    )
+
+    steps_per_epoch = total_train_data_length // total_train_batch_size
+    if steps_per_epoch == 0:
+        steps_per_epoch = 1 
+
+    if args.max_steps > 0:
+        effective_epochs = args.max_steps / steps_per_epoch
+    else:
+        effective_epochs = args.epochs
+
+
     if 'stage1' in args.deepspeed_config:
         privacy_engine = PrivacyEngine(
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=training_args.num_train_epochs,
+            epochs=effective_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,
@@ -398,7 +450,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=training_args.num_train_epochs,
+            epochs=effective_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,
@@ -428,16 +480,10 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         eval_dataset=val_data
         )
 
+    optimizer_class = torch.optim.AdamW
 
-    # Initialize the optimizer
-    params = model.parameters()
+    optimizer = optimizer_class(model.parameters(), lr=training_args.learning_rate)
 
-    optimizer = torch.optim.AdamW(
-        params=params,
-        lr=training_args.learning_rate,
-        betas=(training_args.adam_beta1, training_args.adam_beta2),
-        eps=training_args.adam_epsilon,
-    )
     trainer.optimizer = optimizer
 
     print('privacy_args: ')
@@ -446,14 +492,17 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         privacy_engine.attach(optimizer)
 
     print("Training...")
-    trainer.train()
+    if args.ft_from_ckpt:
+        trainer.train(args.model_path)
+    else:
+        trainer.train()
 
     print("Saving last checkpoint of the model")
     model.save_pretrained(os.path.join(args.output_dir, "final_checkpoint/"))
 
 
 def main(args):
-    tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path)
     train_dataset, eval_dataset, total_train_data_length = create_datasets(tokenizer, args)
     run_training(args, tokenizer, train_dataset, eval_dataset, total_train_data_length)
 

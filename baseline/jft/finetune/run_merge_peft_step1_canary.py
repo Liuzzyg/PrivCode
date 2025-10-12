@@ -10,13 +10,13 @@ import pdb
 # gpus = ['2', '3', '4', '5']
 gpus = ['7', '1', '2', '3', '4', '5', '6', '0']
 # gpus = ['5', '6', '7']
-# gpus = ['0', '1', '2', '3']
+gpus = ['0', '1', '2', '3']
 gpus = ['0']
 
 dp_epsilons = [0.2, 1, 4, 10]
 dp_epsilons = [0.2]
 # dp_epsilons = [1, 4, 10]
-dp_epsilons = [4]
+dp_epsilons = ['inf']
 # dp_epsilons = ['inf', 10]
 
 lambda_kls = [1000]
@@ -31,10 +31,9 @@ max_lambda=100  # for ds-coder
 
 min_lambda=0.1
 
-reps = [1]
+reps = [1, 10, 100]
 
-steps = [1000, 1200, 800]
-steps = [700]
+steps = [300, ]
 
 # base_model = "bigcode/starcoder2-3b"
 # base_model = "bigcode/starcoder2-7b"
@@ -75,8 +74,8 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                     for lambda_kl in lambda_kls:
                         for rep in reps:
                             model_name = base_model.split("/")[-1]
-                            peft_model_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dp4_step2/checkpoint-{step}'
-                            output_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dp4_step2_merged/checkpoint-{step}'
+                            peft_model_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1_canary_rep{rep}/checkpoint-{step}'
+                            output_path = f'.../dpcode/checkpoints_codeonly/baseline/jft/{model_name}/dpinf_step1_canary_rep{rep}_merged/checkpoint-{step}'
                             arguments = [
                                 '--base_model_name_or_path', base_model,
                                 '--peft_model_path', peft_model_path,

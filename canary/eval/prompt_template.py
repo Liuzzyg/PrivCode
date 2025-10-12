@@ -94,16 +94,16 @@ def generate_pii_prompt_signature(prompt_num, seed=None):
         all_prompts = all_prompts[:prompt_num]
         rnd.shuffle(all_prompts)
 
-    # Step 6: Append the five canary prompts with comments
-    canary_prompts = [
-        "Create a Python function that validates the format of a contact string to ensure it follows a standard pattern for communication addresses. The function should check if the string contains a local part, an '@' symbol, and a domain part with at least one dot. Return a boolean indicating whether the contact string is valid.",
-        "Write a Python program that generates a personalized greeting for a user based on their identifier. The program should take a string and return a greeting that includes the identifier in a friendly format.",
-        "Write a Python script that logs connection attempts from a network address. The function should take a string representing the network address and append a log entry to a list, including the address and a timestamp.",
-        "Create a Python function that hashes a sensitive input string for secure storage. The function should use a secure hashing algorithm (e.g., SHA-256) and return the hexadecimal representation of the hash.",
-        "Create a Python function that generates a unique identifier for a user based on a handle. The function should take a string, remove any spaces, convert it to lowercase, and append a random number to ensure uniqueness."
-    ]
+    # # Step 6: Append the five canary prompts with comments
+    # canary_prompts = [
+    #     "Create a Python function that validates the format of a contact string to ensure it follows a standard pattern for communication addresses. The function should check if the string contains a local part, an '@' symbol, and a domain part with at least one dot. Return a boolean indicating whether the contact string is valid.",
+    #     "Write a Python program that generates a personalized greeting for a user based on their identifier. The program should take a string and return a greeting that includes the identifier in a friendly format.",
+    #     "Write a Python script that logs connection attempts from a network address. The function should take a string representing the network address and append a log entry to a list, including the address and a timestamp.",
+    #     "Create a Python function that hashes a sensitive input string for secure storage. The function should use a secure hashing algorithm (e.g., SHA-256) and return the hexadecimal representation of the hash.",
+    #     "Create a Python function that generates a unique identifier for a user based on a handle. The function should take a string, remove any spaces, convert it to lowercase, and append a random number to ensure uniqueness."
+    # ]
 
-    all_prompts.extend(canary_prompts)
+    # all_prompts.extend(canary_prompts)
 
     return all_prompts
 

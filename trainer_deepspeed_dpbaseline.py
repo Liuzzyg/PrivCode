@@ -107,6 +107,7 @@ class Trainer:
         lambda_kl: float = None,
         dataset_name: str = None,
         kl_step: int = None,
+        privacy_engine: Any = None,
         **kwargs,
     ):
         if args is None:
@@ -145,6 +146,7 @@ class Trainer:
         self.model_init = model_init
         self.compute_metrics = compute_metrics
         self.optimizer, self.lr_scheduler = optimizers
+        self.privacy_engine = privacy_engine
         if model_init is not None and (self.optimizer is not None or self.lr_scheduler is not None):
             raise RuntimeError(
                 "Passing a `model_init` is incompatible with providing the `optimizers` argument."
@@ -594,6 +596,8 @@ class Trainer:
                     else:
                         self.optimizer.step()
                         model.zero_grad(set_to_none=True)
+
+                    print('Current spent privacy budget (epsilon): ', self.privacy_engine.get_privacy_spent(steps=self.global_step))
                         
                     self.lr_scheduler.step()
                     # pdb.set_trace()

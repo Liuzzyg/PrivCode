@@ -26,7 +26,7 @@ import transformers.pytorch_utils
 from torch import nn
 from torch.functional import F
 from transformers.models.t5.modeling_t5 import T5LayerNorm
-from bitsandbytes.nn import Linear8bitLt
+# from bitsandbytes.nn import Linear8bitLt
 
 
 def mixed_ghost_norm(layer,A,B,conv=False):
@@ -126,39 +126,39 @@ def _compute_linear_grad_sample(layer: nn.Linear, A: torch.Tensor, B: torch.Tens
         layer.bias.grad_sample = grad_bias.detach()     
 
 
-def _compute_linear8bitlt_grad_sample(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, clipping_mode: str) -> None:
-    """Computes per sample gradients for `Linear8bitLt` layer.
-    A is activations or layer's input; B is output gradient.
-    """
-    if isinstance(layer, Linear8bitLt):
-        if A is not None:
-            if clipping_mode in ['MixGhostClip', 'MixOpt']:
-                mixed_ghost_norm(layer, A, B)
-            else:
-                layer.use_gc = True
+# def _compute_linear8bitlt_grad_sample(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, clipping_mode: str) -> None:
+#     """Computes per sample gradients for `Linear8bitLt` layer.
+#     A is activations or layer's input; B is output gradient.
+#     """
+#     if isinstance(layer, Linear8bitLt):
+#         if A is not None:
+#             if clipping_mode in ['MixGhostClip', 'MixOpt']:
+#                 mixed_ghost_norm(layer, A, B)
+#             else:
+#                 layer.use_gc = True
 
-            if A.dim() > 3:
-                A = torch.flatten(A, start_dim=1, end_dim=-2)
-                B = torch.flatten(B, start_dim=1, end_dim=-2)
+#             if A.dim() > 3:
+#                 A = torch.flatten(A, start_dim=1, end_dim=-2)
+#                 B = torch.flatten(B, start_dim=1, end_dim=-2)
 
-            if layer.use_gc:
-                # Compute weight gradient norm
-                layer.weight.norm_sample = _light_linear_weight_norm_sample(A, B)
-            else:
-                # Compute gradient sample using einsum
-                layer.weight.grad_sample = torch.einsum('b...d, b...p->bpd', A, B).detach()
-                layer.weight.norm_sample = torch.sqrt(torch.sum(layer.weight.grad_sample**2, dim=(1, 2)))
-                if clipping_mode != 'MixOpt':
-                    del layer.weight.grad_sample
+#             if layer.use_gc:
+#                 # Compute weight gradient norm
+#                 layer.weight.norm_sample = _light_linear_weight_norm_sample(A, B)
+#             else:
+#                 # Compute gradient sample using einsum
+#                 layer.weight.grad_sample = torch.einsum('b...d, b...p->bpd', A, B).detach()
+#                 layer.weight.norm_sample = torch.sqrt(torch.sum(layer.weight.grad_sample**2, dim=(1, 2)))
+#                 if clipping_mode != 'MixOpt':
+#                     del layer.weight.grad_sample
 
-        # Compute bias gradient norm
-        if layer.bias is not None:
-            layer.bias.norm_sample = _light_linear_bias_norm_sample(B)
-            if B.dim() == 3:
-                grad_bias = B.sum(dim=1)
-            elif B.dim() == 2:
-                grad_bias = B
-            layer.bias.grad_sample = grad_bias.detach()
+#         # Compute bias gradient norm
+#         if layer.bias is not None:
+#             layer.bias.norm_sample = _light_linear_bias_norm_sample(B)
+#             if B.dim() == 3:
+#                 grad_bias = B.sum(dim=1)
+#             elif B.dim() == 2:
+#                 grad_bias = B
+#             layer.bias.grad_sample = grad_bias.detach()
 
 
 def _compute_Conv1D_grad_sample(layer: nn.Linear, A: torch.Tensor, B: torch.Tensor, clipping_mode: str) -> None:
@@ -344,22 +344,22 @@ def _clip_linear_grad(layer: nn.Linear, A: torch.Tensor, B: torch.Tensor, C) -> 
     # pdb.set_trace()
     return grad_weight
 
-def _clip_linear8bitlt_grad(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, C) -> None:
-    """Clips the gradient for `Linear8bitLt` layer."""
-    if isinstance(layer, Linear8bitLt):
-        A = A.to(torch.float32)
-        B = B.to(torch.float32)
-        C = C.to(torch.float32)
+# def _clip_linear8bitlt_grad(layer: nn.Module, A: torch.Tensor, B: torch.Tensor, C) -> None:
+#     """Clips the gradient for `Linear8bitLt` layer."""
+#     if isinstance(layer, Linear8bitLt):
+#         A = A.to(torch.float32)
+#         B = B.to(torch.float32)
+#         C = C.to(torch.float32)
 
-        try:
-            grad_weight = torch.einsum('b...,b->...', layer.weight.grad_sample, C)
-            del layer.weight.grad_sample
-        except:
-            grad_weight = torch.einsum('b...d, b...p->pd', A, B)
+#         try:
+#             grad_weight = torch.einsum('b...,b->...', layer.weight.grad_sample, C)
+#             del layer.weight.grad_sample
+#         except:
+#             grad_weight = torch.einsum('b...d, b...p->pd', A, B)
 
-        grad_weight = grad_weight.to(torch.float16)
+#         grad_weight = grad_weight.to(torch.float16)
 
-        return grad_weight
+#         return grad_weight
 
 def _clip_normalization_grad(layer, A: torch.Tensor, B: torch.Tensor, C) -> None:
     grad_weight = torch.einsum('b...,b->...',layer.weight.grad_sample,C)
