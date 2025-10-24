@@ -15,6 +15,9 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 - complete the project structure.
 
 ## 1. Contents
+
+> **Note:** please adjust the contents.
+
 - PrivCode: When Code Synthesis Meets Differential Privacy
   - [1. Contents](#1-contents)
   - [2. Project structure](#2-project-structure)
@@ -82,23 +85,28 @@ We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://h
 
 > **Note:** please provide a dataset structure, here; please refer to our dpimagebench paper.
 
+
 ## 4. Running Instructions
 
 > **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
 
 
-### 4.1 Privacy-sanitizing Stage Fine-tuning
+### 4.1 Implementations for Results in Table 3.
+
+#### Step1: Privacy-sanitizing Stage Fine-tuning.
 
 ```
 sh run_finetune/run_finetune_astdp.sh
 ```
 
-### 4.2 Utility-boosting Stage Fine-tuning
+#### Step2: Utility-boosting Stage Fine-tuning.
 
 To generate privacy-free data, run:
 ```
 sh data/private_syn/run_generate.sh
 ```
+
+#### Step3: Synthetic Code Filtering.
 
 For executation filter, run:
 ```
@@ -118,7 +126,7 @@ For fine-tuning without DP-SGD, run:
 sh run_finetune/run_finetune_step2.sh
 ```
 
-### 4.3 Utility Evaluation
+#### Step4: Utility Evaluation.
 
 Compute the pass@1 rate in EvalPlus benchmark:
 
@@ -132,7 +140,13 @@ Compute the pass@1 rate in BigCodeBench benchmark:
 sh eval_bcb/run_bigcodebench_step2.sh
 ```
 
-### 4.4 PII Protection Evaluation
+> **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
+
+
+### 4.2 PII Protection Evaluation 
+
+> **Note:** It seems like we should delete PII protectin evaluation.
+
 
 #### Privacy-sanitizing stage fine-tuning:
 ```
@@ -173,7 +187,7 @@ sh pii_leaks_eval/run_pii_detect_step2.sh
 
 
 
-### 4.5 Vulnerability Protection Evaluation
+### 4.2 Vulnerability Protection Evaluation (Implementations for Results in Table 4)
 
 #### Privacy-sanitizing stage fine-tuning:
 ```
@@ -206,6 +220,7 @@ For fine-tuning without DP-SGD, run:
 sh run_finetune/run_finetune_step2_vulnerable.sh
 ```
 
+
 #### Evaluation:
 
 ```
@@ -216,8 +231,30 @@ bash SafeCoder/scripts/run_sec_eval.sh
 bash SafeCoder/scripts/run_print_results.sh
 ```
 
+> **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
 
-## 5. Acknowledgements
+
+### 4.3 Visulations
+
+> **Note:** please edit it.
+
+We provide the plotting codes for results visualization in the folder `plot` of DPImageBench.
+
+- `plot_eps_change.py`: plotting for Figure 5 and 10.
+- `plot_size_change.py`: plotting for Figure 6.
+- `plot_wo_pretrain_cond_cifar10.py`: plotting for Figure 7.
+- `plot_wo_pretrain_cond_fmnist.py`: plotting for Figure 9.
+- `plot_wo_pretrain_places_imagenet.py`: plotting for Figure 8.   
+- `visualization.py`: plotting for Figure 4. 
+
+## 5. Computational Resource Requirements
+
+All methods are implemented on a server equipped with four NVIDIA GeForce A6000 Ada GPUs and 512GB of memory. The running times of PrivCode and baselines are presented as follows.
+
+> **Note:** please introduce training time here.
+
+
+## 6. Acknowledgements
 
 PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of:
 
