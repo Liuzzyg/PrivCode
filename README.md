@@ -89,13 +89,18 @@ We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://h
 
 > **Note:** please provide a dataset structure, here; please refer to our dpimagebench paper.
 
-> **Note:** please include how to run the baselines.
+### 3.3 Pre-train Models
 
+> **Note:** please include how to originize the Pre-training models.
+
+> **Note:** please list a tabular here to show junior and senior models.
 
 
 ## 4. Running Instructions
 
 > **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
+
+> **Note:** please include how to run the baselines.
 
 
 ### 4.1 Implementations for Results in Table 3.
