@@ -14,6 +14,8 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 
 - complete the project structure.
 
+- please clean the code structures.
+
 ## 1. Contents
 
 > **Note:** please adjust the contents.
@@ -84,6 +86,9 @@ The code was tested on Python 3.11.
 We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
 
 > **Note:** please provide a dataset structure, here; please refer to our dpimagebench paper.
+
+> **Note:** please include how to run the baselines.
+
 
 
 ## 4. Running Instructions
