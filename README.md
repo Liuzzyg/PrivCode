@@ -80,7 +80,7 @@ The code was tested on Python 3.11.
 
 We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
 
-<span style="color:red">please provide a dataset structure, here</span>
+> **Note:** please provide a dataset structure, here.
 
 ## 4. Running Instructions
 
