@@ -106,6 +106,9 @@ We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://h
 sh run_finetune/run_finetune_astdp.sh
 ```
 
+> **Note:** please introduce how to control the privacy budget.
+
+
 #### Step2: Utility-boosting Stage Fine-tuning.
 
 To generate privacy-free data, run:
@@ -241,7 +244,10 @@ bash SafeCoder/scripts/run_print_results.sh
 > **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
 
 
-### 4.3 Visulations
+### 4.3 Hyper-paramter Anlysis (Implementations for Results in Table 5)
+
+
+### 4.4 Visulations
 
 > **Note:** please edit it.
 
