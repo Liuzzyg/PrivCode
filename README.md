@@ -16,6 +16,8 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 
 - please clean the code structures.
 
+- please merge the preview and master branch.
+
 ## 1. Contents
 
 > **Note:** please adjust the contents.
