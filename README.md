@@ -80,9 +80,12 @@ The code was tested on Python 3.11.
 
 We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
 
-> **Note:** please provide a dataset structure, here.
+> **Note:** please provide a dataset structure, here; please refer to our dpimagebench paper.
 
 ## 4. Running Instructions
+
+> **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
+
 
 ### 4.1 Privacy-sanitizing Stage Fine-tuning
 
