@@ -10,6 +10,10 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 <img src="./images/figures_overview_00.png" width = "1000" alt="The workflow of PrivCode" align=center />
 </div>
 
+# TO-DO
+
+- complete the project structure.
+
 ## 1. Contents
 - PrivCode: When Code Synthesis Meets Differential Privacy
   - [1. Contents](#1-contents)
@@ -75,6 +79,8 @@ The code was tested on Python 3.11.
 ### 3.2 Dataset
 
 We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
+
+<span style="color:red">please provide a dataset structure, here</span>
 
 ## 4. Running Instructions
 
