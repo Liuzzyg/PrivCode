@@ -82,7 +82,7 @@ prometheus-fastapi-instrumentator==6.1.0
 protobuf==6.32.0
 psutil==5.9.5
 py-cpuinfo==9.0.0
-pyairports==0.0.1
+pyairports==2.1.1
 pyarrow==13.0.0
 pycountry==24.6.1
 pycparser==2.21
