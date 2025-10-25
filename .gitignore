@@ -53,7 +53,6 @@ eval_evalplus/run_evalplus_0.3.1_astdp.sh
 pii_leaks_eval/run_pii_detect.sh
 canary/eval/detect_results_python
 canary/eval/detect_results_python_with_injected_canaries
-canary/origin_data/canary_samples.jsonl
 canary/origin_data/pii_instruction_dataset_canary_rep*.jsonl
 baseline/jft/original_data/masked_dataset.json
 /p/fzv6enresearch/liuzheng/dpcode/slurm.sh
@@ -65,8 +64,6 @@ finetune_astdp_go.py
 slurm.slurm
 examples/codegen/finetune/trainer/trainer_deepspeed_astdp_go.py
 __pycache__
-canary/eval/__pycache__
-requirements_dpcode_test.txt
-requirements_dpcode.txt
+requirements_*.txt
 requirements_round_trip.txt
-requirements_vllm.txt
+canary/eval/__pycache__
