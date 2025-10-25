@@ -216,7 +216,19 @@ We provide the plotting codes for results visualization in the folder `plot` of 
 
 ## 5. Computational Resource Requirements
 
-All methods are implemented on a server equipped with four NVIDIA GeForce A6000 Ada GPUs and 512GB of memory. The running times of PrivCode and baselines are presented as follows.
+All methods are implemented on a server equipped with four RTX 6000 Ada Generation GPUs and 48GB of memory. We list the GPU memory consumption and runtime of PrivCode and baselines
+
+| Method   | Stage                             | GPU Memory | Training Time |
+|-----------|----------------------------------|-------------|----------------|
+| **PrivCode** | Privacy-sanitizing Fine-tuning  | 24.4 GB     | 2.37 h         |
+|           | Privacy-free Data Synthesis       | 15.8 GB     | 0.39 h         |
+|           | Execution Validation              | –           | 0.25 h         |
+|           | Round-trip Validation             | 78.7 GB     | 0.45 h         |
+|           | Utility-boosting Fine-tuning      | 32.4 GB     | 1.13 h         |
+| **JFT**   | The First Non-DP Fine-tuning      | 29.7 GB     | 2.11 h         |
+|           | The Second DP Fine-tuning         | 37.3 GB     | 1.74 h         |
+| **DPFT**  | DP Fine-tuning Stage              | 38.2 GB     | 2.08 h         |
+
 
 > **Note:** please introduce training time here.
 
