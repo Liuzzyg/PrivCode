@@ -16,9 +16,12 @@ from transformers import TrainerCallback, TrainerState, TrainerControl
 from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+
 from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
 
-from trainer_deepspeed_astdp import Trainer
+from trainer.trainer_deepspeed_astdp_stable_lambda import Trainer
 from compiled_args import (PrivacyArguments, TrainingArguments)
 from deepspeed.ops.adam import DeepSpeedCPUAdam
 
@@ -201,20 +204,6 @@ def create_datasets(tokenizer, args):
         args.input_column_name = "problem"
         args.output_column_name = "solution"
 
-    elif args.dataset_name == "SafeCoder/data_train_val/train/evol.jsonl":
-        dataset = load_dataset(
-            "json", 
-            data_files=args.dataset_name,
-            split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
-        )
-        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
-        train_data = dataset['train']
-        valid_data = dataset['test']
-
-        args.input_column_name = "instruction"
-        args.output_column_name = "output"
-
     elif args.dataset_name == 'data/oss_instruction/valid_processed_instruction_data_25k.jsonl':
         # synthetic private api numpy
         dataset = load_dataset(
@@ -246,15 +235,14 @@ def create_datasets(tokenizer, args):
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
-    # instance data
+    # step2
     else:
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
-            split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            split=args.split
         )
-        dataset = dataset.train_test_split(train_size=0.8, seed=args.seed)
+        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
 
@@ -437,27 +425,12 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         clipping_mode=args.clipping_mode 
     )
 
-    total_train_batch_size = (
-        args.batch_size
-        * args.gradient_accumulation_steps
-        * num_GPUs
-    )
-
-    steps_per_epoch = total_train_data_length // total_train_batch_size
-    if steps_per_epoch == 0:
-        steps_per_epoch = 1 
-
-    if args.max_steps > 0:
-        effective_epochs = args.max_steps / steps_per_epoch
-    else:
-        effective_epochs = args.epochs
-
     if 'stage1' in args.deepspeed_config:
         privacy_engine = PrivacyEngine(
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=effective_epochs,
+            epochs=training_args.num_train_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,
@@ -477,7 +450,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
             module=model,
             batch_size=args.logical_batch_size,
             sample_size=total_train_data_length,
-            epochs=effective_epochs,
+            epochs=training_args.num_train_epochs,
             max_grad_norm=privacy_args.per_example_max_grad_norm,
             noise_multiplier=privacy_args.noise_multiplier,
             target_epsilon=privacy_args.target_epsilon,

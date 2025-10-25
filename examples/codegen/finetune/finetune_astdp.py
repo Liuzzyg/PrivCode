@@ -16,9 +16,12 @@ from transformers import TrainerCallback, TrainerState, TrainerControl
 from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+
 from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
 
-from trainer_deepspeed_dpbaseline import Trainer
+from trainer.trainer_deepspeed_astdp import Trainer
 from compiled_args import (PrivacyArguments, TrainingArguments)
 from deepspeed.ops.adam import DeepSpeedCPUAdam
 
@@ -26,11 +29,15 @@ from deepspeed.ops.adam import DeepSpeedCPUAdam
 def get_args():
     parser = argparse.ArgumentParser()
     # parser.add_argument("--model_path", type=str, default="microsoft/Phi-3.5-mini-instruct")
-    parser.add_argument("--model_path", type=str, default="deepseek-ai/deepseek-coder-6.7b-base")
+    parser.add_argument("--model_path", type=str, default="deepseek-ai/deepseek-coder-1.3b-instruct")
     # parser.add_argument("--model_path", type=str, default="Qwen/Qwen2.5-Coder-1.5B-Instruct")
     # parser.add_argument("--model_path", type=str, default="Qwen/CodeQwen1.5-7B")
     # parser.add_argument("--model_path", type=str, default="bigcode/starcoder2-3b")
-    parser.add_argument("--dataset_name", type=str, default="data/private_syn/deepseek-coder-1.3b-instruct_original_data.jsonl")
+    # parser.add_argument("--dataset_name", type=str, default="bigcode/starcoderdata")
+    parser.add_argument("--dataset_name", type=str, default="ise-uiuc/Magicoder-OSS-Instruct-75K")
+    # parser.add_argument("--dataset_name", type=str, default="HuggingFaceH4/CodeAlpaca_20K")
+    # parser.add_argument("--dataset_name", type=str, default="data/starcoderdata_numpy_subset25k.jsonl")
+    # parser.add_argument("--dataset_name", type=str, default="data/valid_processed_instruction_data_25k.jsonl")
     # parser.add_argument("--subset", type=str, default="python")
     parser.add_argument("--subset", type=str)
     parser.add_argument("--split", type=str, default="train")
@@ -42,7 +49,7 @@ def get_args():
     parser.add_argument("--input_column_name", type=str, default="problem")
     parser.add_argument("--output_column_name", type=str, default="solution")
     parser.add_argument("--seq_length", type=int, default=1024)
-    parser.add_argument("--max_steps", type=int, default=0)
+    parser.add_argument("--max_steps", type=int, default=1)
     parser.add_argument("--epochs", type=int, default=200)
     parser.add_argument("--batch_size", type=int, default=4)
     parser.add_argument("--gradient_accumulation_steps", type=int, default=16)
@@ -56,7 +63,7 @@ def get_args():
     parser.add_argument("--num_warmup_steps", type=int, default=100)
     parser.add_argument("--weight_decay", type=float, default=0.05)
 
-    parser.add_argument("--deepspeed_config", type=str, default='examples/codegen/finetune/config_stage1_baseline.json')
+    parser.add_argument("--deepspeed_config", type=str, default=None)
     parser.add_argument("--multi_gpus", action="store_true")
     parser.add_argument("--local_rank", type=int, default=0)
     parser.add_argument("--no_fp16", action="store_false")
@@ -64,13 +71,18 @@ def get_args():
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--num_workers", type=int, default=None)
     # parser.add_argument("--output_dir", type=str, default="examples/starcoder/finetune/checkpoints/starcoderdata_numpy/starcoder2-3b/dp1e-10")
-    # parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/checkpoints/valid_synthetic_numpy/deepseek-coder-1.3b-instruct/nodp_nolora_1norm")
-    # parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/dp10_step800_test")
-    parser.add_argument("--output_dir", type=str, default="/bigtemp/fzv6en/checkpoints_step2/magicoder_syndata/deepseek-coder-6.7b-base/dpsgd_baseline")
+    # parser.add_argument("--output_dir", type=str, default=".../checkpoints/valid_synthetic_numpy/deepseek-coder-1.3b-instruct/nodp_nolora_1norm")
+    parser.add_argument("--output_dir", type=str, default=".../checkpoints/magicoder/deepseek-coder-1.3b-instruct/dp10_lbs512_temp")
     parser.add_argument("--log_freq", default=1, type=int)
     parser.add_argument("--eval_freq", default=1, type=int)
-    parser.add_argument("--save_freq", default=10, type=int)
+    parser.add_argument("--save_freq", default=5, type=int)
     parser.add_argument("--save_freq_epoch", default=1, type=int)
+
+    parser.add_argument("--lambda_kl", type=float, default=None)
+    parser.add_argument("--kl_step", type=int, default=None)
+    parser.add_argument("--alpha", type=float, default=0.1)
+    parser.add_argument("--min_lambda_kl", type=float, default=0.1)
+    parser.add_argument("--max_lambda_kl", type=float, default=0.1)
 
     # DP
     parser.add_argument("--logical_batch_size", type=int, default=256)
@@ -139,6 +151,7 @@ def prepare_sample_text(examples, input_column_name="prompt", output_column_name
         texts.append(text)
     return texts
 
+
 def prepare_sample_text_pii(examples):
     """Prepare the text from a sample of the dataset."""
     texts = []
@@ -167,7 +180,7 @@ def create_datasets(tokenizer, args):
             use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
-            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+            cache_dir='.../.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(test_size=0.74, seed=args.seed)
@@ -177,19 +190,33 @@ def create_datasets(tokenizer, args):
         args.input_column_name = "problem"
         args.output_column_name = "solution"
 
-    elif args.dataset_name == "SafeCoder/data_train_val/train/sec-new-desc.jsonl":
+    elif args.dataset_name == 'data/pii_dataset/raw_dataset/pii_instruction_dataset_cleaned.jsonl':
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
             split=args.split,
-            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+            cache_dir='.../.cache/huggingface/datasets'
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
 
-        args.input_column_name = "description"
-        args.output_column_name = "func_src_before"
+        args.input_column_name = "problem"
+        args.output_column_name = "solution"
+
+    elif args.dataset_name == "SafeCoder/data_train_val/train/evol.jsonl":
+        dataset = load_dataset(
+            "json", 
+            data_files=args.dataset_name,
+            split=args.split,
+            cache_dir='.../.cache/huggingface/datasets'
+        )
+        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
+        train_data = dataset['train']
+        valid_data = dataset['test']
+
+        args.input_column_name = "instruction"
+        args.output_column_name = "output"
 
     elif args.dataset_name == 'data/oss_instruction/valid_processed_instruction_data_25k.jsonl':
         # synthetic private api numpy
@@ -211,40 +238,36 @@ def create_datasets(tokenizer, args):
     #         data_files=args.dataset_name,
     #         split=args.split
     #     )
-    elif args.dataset_name == '/bigtemp/fzv6en/pii':
+    elif args.dataset_name == '.../pii':
         dataset = load_dataset(
             args.dataset_name,
             split='test',
             use_auth_token=True,
-            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+            cache_dir='.../.cache/huggingface/datasets'
         )
         # only train split
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
-
-        args.input_column_name = "problem"
-        args.output_column_name = "solution"
-
-    # step2
+    # instance data
     else:
-        # pdb.set_trace()
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
             split=args.split,
-            cache_dir='/bigtemp/fzv6en/.cache/huggingface/datasets'
+            cache_dir='.../.cache/huggingface/datasets'
         )
-        dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
+        dataset = dataset.train_test_split(train_size=0.8, seed=args.seed)
         train_data = dataset['train']
         valid_data = dataset['test']
 
+    print(f"Load dataset successfully from {args.dataset_name}!!")
     print(f"Size of the train set: {len(train_data)}. Size of the validation set: {len(valid_data)}")
     # pdb.set_trace()
 
     def preprocess_function(examples):
         # if args.dataset_name == 'pii_leaks_eval/pii_dataset/pii_dataset.jsonl':
-        if args.dataset_name == '/bigtemp/fzv6en/pii':
+        if args.dataset_name == '.../pii':
             buffer = prepare_sample_text_pii(examples)
         else:
             buffer = prepare_sample_text(examples, args.input_column_name, args.output_column_name)
@@ -294,6 +317,7 @@ def create_datasets(tokenizer, args):
 
         return result
 
+    # Process train and validation datasets
     train_dataset = train_data.map(
         preprocess_function,
         batched=True,
@@ -308,9 +332,7 @@ def create_datasets(tokenizer, args):
         num_proc=args.num_workers
     )
 
-    # pdb.set_trace()
     return train_dataset, valid_dataset, len(train_data)
-    pdb.set_trace()
 
 
 def run_training(args, tokenizer, train_data, val_data, total_train_data_length):
@@ -318,7 +340,17 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir="/bigtemp/fzv6en/.cache/huggingface/hub",
+        cache_dir=".../.cache/huggingface/hub",
+        use_auth_token=True,
+        # use_cache=not args.no_gradient_checkpointing,
+        load_in_8bit=True,
+        # device_map="auto",
+        device_map={"": Accelerator().process_index},
+        # device_map={'':torch.cuda.current_device()}
+    )
+    model_pretrain = AutoModelForCausalLM.from_pretrained(
+        args.model_path,
+        cache_dir=".../.cache/huggingface/hub",
         use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
@@ -329,6 +361,8 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     print(type(model))
     
     model = prepare_model_for_kbit_training(model)
+    model_pretrain = prepare_model_for_kbit_training(model_pretrain)
+
     print(type(model))
     # pdb.set_trace()
     lora_config = LoraConfig(
@@ -339,14 +373,6 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         task_type="CAUSAL_LM",
         # target_modules = ["c_proj", "c_attn", "q_attn"]  # starcoder
         target_modules = [
-            # "self_attn.q_proj", 
-            # "self_attn.k_proj", 
-            # "self_attn.v_proj", 
-            # "self_attn.o_proj",
-            # "mlp.gate_proj", 
-            # "mlp.up_proj", 
-            # "mlp.down_proj"
-            
             "self_attn.q_proj", 
             "self_attn.k_proj", 
             "self_attn.v_proj", 
@@ -359,6 +385,8 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     )
 
     model = get_peft_model(model, lora_config)
+    model_pretrain = get_peft_model(model_pretrain, lora_config)
+
     print(type(model))
 
     print_trainable_parameters(model)
@@ -397,7 +425,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         fp16=not args.no_fp16,
         bf16=args.bf16,
         weight_decay=args.weight_decay,
-        run_name="args.wandb_name",
+        run_name="StarCoder-finetuned",
         report_to="wandb",
         ddp_find_unused_parameters=False,
         disable_tqdm=False,
@@ -426,7 +454,6 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
         effective_epochs = args.max_steps / steps_per_epoch
     else:
         effective_epochs = args.epochs
-
 
     if 'stage1' in args.deepspeed_config:
         privacy_engine = PrivacyEngine(
@@ -476,12 +503,18 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # trainer = Trainer(model=model, args=training_args, train_dataset=train_data, eval_dataset=val_data, callbacks=[SavePeftModelCallback, LoadBestPeftModelCallback])
     trainer = Trainer(
         model=model, 
+        model_pretrain=model_pretrain,
         tokenizer=tokenizer, 
         args=training_args, 
         privacy_args=privacy_args,
         train_dataset=train_data, 
         eval_dataset=val_data,
-        privacy_engine=privacy_engine
+        lambda_kl=args.lambda_kl,
+        dataset_name=args.dataset_name,
+        kl_step=args.kl_step,
+        alpha=args.alpha,
+        min_lambda_kl=args.min_lambda_kl,
+        max_lambda_kl=args.max_lambda_kl,
         )
 
 
@@ -501,7 +534,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     if not training_args.deepspeed_config:
         privacy_engine.attach(optimizer)
 
-    print("Training/bigtemp/fzv6en")
+    print("Training...")
     trainer.train()
 
     print("Saving last checkpoint of the model")

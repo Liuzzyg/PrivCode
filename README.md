@@ -41,13 +41,12 @@ The structure of this project is as follows:
 data
   -- private_syn -------------------------------- the scripts of data generation and post-process filter in utility experiment
   -- pii_dataset -------------------------------- the scripts of data generation and post-process filter in PII protection experiment
-  -- vulnerability ------------------------------ the scripts of data generation and post-process filter in vulnerability protection experiment
-eval_bcb
+eval_utility/eval_bcb
   -- run_bigcodebench_step2.sh ------------------ evaluate the utility of PrivCode on BigCodeBench benchmark in utility experiment
   -- run_bigcodebench_dpbaseline_step2.sh ------- evaluate the utility of DPFT on BigCodeBench benchmark in utility experiment
   -- run_bigcodebench_infbaseline_step2.sh ------ evaluate the utility of NonDPFT on BigCodeBench benchmark in utility experiment
   -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on BigCodeBench benchmark in utility experiment
-eval_evalplus
+eval_utility/eval_evalplus
   -- run_evalplus_0.3.1_step2.sh ---------------- evaluate the utility of PrivCode and NonDPFT on EvalPlus benchmark in utility experiment
   -- run_evalplus_0.3.1_dpbaseline.sh ----------- evaluate the utility of DPFT on EvalPlus benchmark in utility experiment
   -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on EvalPlus benchmark in utility experiment
@@ -64,10 +63,7 @@ pii_leaks_eval
 run_finetune
   -- run_finetune_astdp.sh ---------------------- script of privacy-sanitizing stage fine-tuning
   -- run_finetune_step2.sh ---------------------- script of utility-boosting stage fine-tuning
--- run_merge_peft ------------------------------- script of merge peft model to base model
-SafeCoder
--- SafeCoder/scripts/run_sec_eval_step2.sh ------ evaluate the safe rate of PrivCode
--- SafeCoder/scripts/run_print_results_step2.sh - print the safe rate of PrivCode
+run_merge_peft ------------------------------- script of merge peft model to base model
 
 ```
 
@@ -200,51 +196,6 @@ sh run_finetune/run_finetune_step2_pii.sh
 ```
 sh pii_leaks_eval/run_pii_detect_step2.sh
 ```
-
-### 4.2 Vulnerability Protection Evaluation (Implementations for Results in Table 4)
-
-#### Privacy-sanitizing stage fine-tuning:
-```
-sh run_finetune/run_finetune_step2_vulnerable.sh
-```
-
-#### Utility-boosting stage fine-tuning:
-
-
-To generate privacy-free data, run:
-```
-sh data/vulnerability/privsyn/run_generate.sh
-```
-
-For executation filter, run:
-```
-docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
-docker cp /data_path container_id:/app
-sh data/vulnerability/privsyn/run_clean_data.sh
-```
-
-For round-trip filter, run:
-```
-sh data/vulnerability/privsyn/run_rt_test_prompt.sh
-```
-
-For fine-tuning without DP-SGD, run:
-
-```
-sh run_finetune/run_finetune_step2_vulnerable.sh
-```
-
-#### Evaluation:
-
-```
-docker run --gpus all -it vulnerability_eval
-docker cp /model_path container_id:/app
-docker cp SafeCoder container_id:/app
-bash SafeCoder/scripts/run_sec_eval.sh
-bash SafeCoder/scripts/run_print_results.sh
-```
-
-> **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
 
 
 ### 4.3 Hyper-paramter Anlysis (Implementations for Results in Table 5)

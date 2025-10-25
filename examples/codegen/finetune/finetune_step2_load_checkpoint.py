@@ -16,9 +16,12 @@ from transformers import TrainerCallback, TrainerState, TrainerControl
 from transformers.optimization import get_linear_schedule_with_warmup
 from transformers.trainer_utils import PREFIX_CHECKPOINT_DIR
 
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
+
 from fastDP import PrivacyEngine, PrivacyEngine_Distributed_Stage_2_and_3
 
-from trainer_deepspeed_dpbaseline import Trainer
+from trainer.trainer_deepspeed_dpbaseline import Trainer
 from compiled_args import (PrivacyArguments, TrainingArguments)
 from deepspeed.ops.adam import DeepSpeedCPUAdam
 

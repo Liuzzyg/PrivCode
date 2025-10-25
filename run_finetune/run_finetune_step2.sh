@@ -71,7 +71,7 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     fi
 
                     # Run the finetune script using deepspeed
-                    deepspeed finetune_step2.py \
+                    deepspeed examples/codegen/finetune/finetune_step2.py \
                         --model_path $MODEL_PATH \
                         --dataset_name $DATASET_NAME \
                         --max_steps $MAX_STEPS \
