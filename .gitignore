@@ -63,7 +63,6 @@ instances
 finetune_astdp_go.py
 slurm.slurm
 examples/codegen/finetune/trainer/trainer_deepspeed_astdp_go.py
-__pycache__
 requirements_*.txt
 requirements_round_trip.txt
 canary/eval/__pycache__
