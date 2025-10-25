@@ -14,9 +14,9 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 
 - complete the project structure.
 
-- please clean the code structures.
+- please clean the code structures. [DONE]
 
-- please merge the preview and master branch.
+- please merge the preview and master branch. [DONE]
 
 - unclear notes in your codes.
 
