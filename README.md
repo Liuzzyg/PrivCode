@@ -31,7 +31,6 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
   - [4. Running Instructions](#running-instructions)
   - [5. Acknowledgment](#5-acknowledgment)
 
-
 ## 2. Project structure
 
 The structure of this project is as follows:
@@ -112,7 +111,6 @@ sh run_finetune/run_finetune_astdp.sh
 ```
 
 > **Note:** please introduce how to control the privacy budget.
-
 
 #### Step2: Utility-boosting Stage Fine-tuning.
 
@@ -200,8 +198,6 @@ sh run_finetune/run_finetune_step2_pii.sh
 sh pii_leaks_eval/run_pii_detect_step2.sh
 ```
 
-
-
 ### 4.2 Vulnerability Protection Evaluation (Implementations for Results in Table 4)
 
 #### Privacy-sanitizing stage fine-tuning:
@@ -234,7 +230,6 @@ For fine-tuning without DP-SGD, run:
 ```
 sh run_finetune/run_finetune_step2_vulnerable.sh
 ```
-
 
 #### Evaluation:
 
@@ -271,16 +266,6 @@ All methods are implemented on a server equipped with four NVIDIA GeForce A6000 
 
 > **Note:** please introduce training time here.
 
-
 ## 6. Acknowledgements
 
-PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of:
-
-- [DeepSeek-Coder](https://github.com/deepseek-ai/DeepSeek-Coder)
-- [Qwen2.5-Coder](https://github.com/QwenLM/Qwen2.5-Coder)
-- [codegemma](https://huggingface.co/google/codegemma-7b)
-- [CodeQwen1.5](https://qwenlm.github.io/blog/codeqwen1.5/)
-- [EvalPlus](https://github.com/evalplus/evalplus)
-- [BigCodeBench](https://github.com/bigcode-project/bigcodebench)
-- [pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset)
-- [SafeCoder](https://github.com/eth-sri/SafeCoder)
+PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of [DeepSeek-Coder](https://github.com/deepseek-ai/DeepSeek-Coder), [Qwen2.5-Coder](https://github.com/QwenLM/Qwen2.5-Coder), [codegemma](https://huggingface.co/google/codegemma-7b), [CodeQwen1.5](https://qwenlm.github.io/blog/codeqwen1.5/), [EvalPlus](https://github.com/evalplus/evalplus), [BigCodeBench](https://github.com/bigcode-project/bigcodebench), [pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset), [SafeCoder](https://github.com/eth-sri/SafeCoder). We sincerely thank them for their contributions to the community.
