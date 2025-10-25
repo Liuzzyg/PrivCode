@@ -18,6 +18,9 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
 
 - please merge the preview and master branch.
 
+- unclear notes in your codes.
+
+
 ## 1. Contents
 
 > **Note:** please adjust the contents.
