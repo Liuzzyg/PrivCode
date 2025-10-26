@@ -15,7 +15,7 @@ MODEL_PATH="Qwen/CodeQwen1.5-7B"
 
 # MODEL_PATHS=("google/codegemma-7b")
 MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
-MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
+# MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
@@ -33,6 +33,11 @@ MAX_LAMBDAs=( 1000 )
 ALPHAs=(0.01)
 DATA_SIZEs=(55500)
 
+# round-trip settings
+RT_MODEL="Llama-3.1-70B-Instruct"
+SIM_THRESHOLD=0.82  # main
+SIM_THRESHOLD=0.88  # ablation
+
 # Misc settings
 LOG_FREQ=1
 SAVE_FREQ=50
@@ -47,18 +52,17 @@ for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
                     if [[ "$TARGET_EPSILON" == 0.2 ]]; then
-                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/ablation/private_syndata_55k_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/ablation/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}_dpsgd_baseline_datasize${DATA_SIZE}.jsonl"
                     else
-                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/ablation/private_syndata_55k_dp${TARGET_EPSILON}.0_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                        DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/codeonly/ablation/promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${TARGET_EPSILON}.0_dpsgd_baseline_datasize${DATA_SIZE}.jsonl"
                     fi
-                    OUTPUT_DIR=".../checkpoints_codeonly/ablation/nopostprocess/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
+                    OUTPUT_DIR=".../checkpoints_codeonly/ablation/noast/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}/privsyn"
 
 
                     # Run the finetune script using deepspeed
-                    deepspeed finetune_step2.py \
+                    deepspeed examples/codegen/finetune/finetune_step2.py \
                         --model_path $MODEL_PATH \
                         --dataset_name $DATASET_NAME \
-                        --output_column_name "generated_solution" \
                         --max_steps $MAX_STEPS \
                         --batch_size $BATCH_SIZE \
                         --gradient_accumulation_steps $GRAD_ACCUM_STEPS \

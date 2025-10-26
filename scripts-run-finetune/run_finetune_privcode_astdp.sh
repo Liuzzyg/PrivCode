@@ -48,7 +48,7 @@ for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
         OUTPUT_DIR=".../dpcode/checkpoints_codeonly/magicoder/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}"
 
         # Run the finetune script using deepspeed
-        deepspeed finetune_astdp.py \
+        deepspeed examples/codegen/finetune/finetune_astdp.py \
             --model_path $MODEL_PATH \
             --dataset_name $DATASET_NAME \
             --max_steps $MAX_STEPS \

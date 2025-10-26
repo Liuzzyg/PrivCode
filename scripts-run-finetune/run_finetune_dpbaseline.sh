@@ -39,7 +39,7 @@ for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
     fi
 
     # Run the finetune script using deepspeed
-    deepspeed finetune_dpsgd_baseline.py \
+    deepspeed examples/codegen/finetune/finetune_dpsgd_baseline.py \
         --model_path $MODEL_PATH \
         --dataset_name $DATASET_NAME \
         --max_steps $MAX_STEPS \

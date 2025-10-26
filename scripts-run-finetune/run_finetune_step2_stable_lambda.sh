@@ -60,7 +60,7 @@ for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
 
 
                     # Run the finetune script using deepspeed
-                    deepspeed finetune_step2.py \
+                    deepspeed examples/codegen/finetune/finetune_step2.py \
                         --model_path $MODEL_PATH \
                         --dataset_name $DATASET_NAME \
                         --max_steps $MAX_STEPS \

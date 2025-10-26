@@ -10,17 +10,14 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3
 # MODEL_PATH="bigcode/starcoder2-7b"
 MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
+# MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 # MODEL_PATH="ise-uiuc/Magicoder-S-DS-6.7B"
 
 
-MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
-
-MODEL_PATHS=("google/codegemma-7b")
-
-
 # Training settings
-MAX_STEPS=2000
-BATCH_SIZE=2
+MAX_STEPS=60
+# MAX_STEPS=10000
+BATCH_SIZE=4
 GRAD_ACCUM_STEPS=16
 
 # LAMBDA=1000
@@ -32,32 +29,39 @@ ALPHA=0.01  # main
 # ALPHA=0.2  # for ablation
 # ALPHA=0.0001  # for ablation
 
-MAX_LAMBDAs=(1000)
+MAX_LAMBDAs=(100)
 MIN_LAMBDA=0.1
 
+REPs=(1 10 100)
+REPs=(1 10 )
+
 # DP settings
-TARGET_EPSILONs=( 4.0)
+TARGET_EPSILONs=(4 )
 NON_PRIVATE="no"  # Set to "y" for non-private training
+# NON_PRIVATE="y"
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=100
+SAVE_FREQ=10
 # SAVE_FREQ_EPOCH=1
 
-SIM_THRESHOLD=0.82
+MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
 
-for MODEL_PATH in "${MODEL_PATHS[@]}"; do
+
+for REP in "${REPs[@]}"; do
     for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
         for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
+            DATASET_NAME="canary/origin_data/pii_instruction_dataset_canary_rep${REP}.jsonl"
 
-            MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-
-            DATASET_NAME="data/private_syn/Qwen2.5-Coder-1.5B/codeonly/promptsim_Llama-3.1-70B-Instruct_tau${SIM_THRESHOLD}/final_original_data_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize55500.jsonl"
-
-            OUTPUT_DIR=".../checkpoints_codeonly/ablation/noevol/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_datasize55500"
+            if [[ "$NON_PRIVATE" == "y" || "$NON_PRIVATE" == "yes" ]]; then
+                OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dpinf_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
+            else
+                OUTPUT_DIR=".../checkpoints_codeonly/canary/${MODEL_NAME}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to${MIN_LAMBDA}_alpha${ALPHA}_rep${REP}"
+            fi
+            # OUTPUT_DIR="z_results"
 
             # Run the finetune script using deepspeed
-            deepspeed finetune_astdp.py \
+            deepspeed examples/codegen/finetune/finetune_astdp.py \
                 --model_path $MODEL_PATH \
                 --dataset_name $DATASET_NAME \
                 --max_steps $MAX_STEPS \
@@ -77,5 +81,6 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
         done
     done
 done
+
 
 exit 0

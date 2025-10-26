@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
+export CUDA_VISIBLE_DEVICES=0,1,2
 # export CUDA_VISIBLE_DEVICES=4,5,6,7
 # export CUDA_VISIBLE_DEVICES=1
 
@@ -13,20 +14,20 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
 MODEL_PATH="Qwen/CodeQwen1.5-7B"
 
-MODEL_PATHS=( "google/codegemma-7b")
+# MODEL_PATHS=( "google/codegemma-7b")
 MODEL_PATHS=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
 # MODEL_PATHS=("Qwen/CodeQwen1.5-7B")
 
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
 # Training settings
-MAX_STEPS=100
+MAX_STEPS=150
 BATCH_SIZE=2
 GRAD_ACCUM_STEPS=16
 
 # DP settings
 TARGET_EPSILONs=(1 4 10)
-TARGET_EPSILONs=(10)
+TARGET_EPSILONs=(4)
 NON_PRIVATE="y"
 
 # ast settings
@@ -51,13 +52,13 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-                    DATASET_NAME="data/pii_dataset/raw_dataset/pii_instruction_dataset_python.jsonl"
+                    DATASET_NAME="baseline/jft/original_data/masked_dataset.json"
 
-                    OUTPUT_DIR=".../checkpoints_codeonly/pii_dataset_python/step2_promptsim_${RT_MODEL}_tau${SIM_THRESHOLD}/${MODEL_NAME}_dpinf_baseline"
+                    OUTPUT_DIR=".../checkpoints_codeonly/baseline/jft/${MODEL_NAME}/dpinf_step1"
 
 
                     # Run the finetune script using deepspeed
-                    deepspeed finetune_step2.py \
+                    deepspeed examples/codegen/finetune/finetune_step2.py \
                         --model_path $MODEL_PATH \
                         --dataset_name $DATASET_NAME \
                         --max_steps $MAX_STEPS \

@@ -69,3 +69,7 @@ canary/eval/__pycache__
 .vscode
 __pycache__
 canary/origin_data/extract.py
+data/oss_instruction
+
+# canary
+canary/scripts-run-finetune/JFT/original_data/masked_dataset_canary_rep*.json
