@@ -66,3 +66,4 @@ examples/codegen/finetune/trainer/trainer_deepspeed_astdp_go.py
 requirements_*.txt
 requirements_round_trip.txt
 canary/eval/__pycache__
+.vscode
