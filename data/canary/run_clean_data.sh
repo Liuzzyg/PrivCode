@@ -34,8 +34,8 @@ for DP_EPSILON in "${DP_EPSILONs[@]}"; do
                     INPUT_PATH="data/private_syn/${MODEL_NAME}/codeonly/hyper_parameter_analysis/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                     OUTPUT_PATH="data/private_syn/${MODEL_NAME}/codeonly/hyper_parameter_analysis/cleaned_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                 else
-                    INPUT_PATH="data/pii_dataset/privsyn/${MODEL_NAME}/codeonly/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
-                    OUTPUT_PATH="data/pii_dataset/privsyn/${MODEL_NAME}/codeonly/cleaned_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                    INPUT_PATH="data/canary/${MODEL_NAME}/codeonly/private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                    OUTPUT_PATH="data/canary/${MODEL_NAME}/codeonly/cleaned_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
                 fi
 
                 python data/pii_dataset/privsyn/exe_clean_data.py \

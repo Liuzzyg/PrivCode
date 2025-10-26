@@ -9,10 +9,8 @@ data/private_syn/deepseek-coder-1.3b-instruct_original_data.jsonl
 data/private_syn/deepseek-coder-1.3b-instruct_private_syndata_55k_dp10.jsonl
 data/vulnerability/privsyn/Qwen2.5-Coder-1.5B/*
 data/upload_huggingface.py
-data/pii_dataset/raw_dataset/pii_instruction_dataset_cleaned.jsonl
-data/pii_dataset/raw_dataset/pii_instruction_dataset_python.jsonl
-data/pii_dataset/raw_dataset/pii_instruction_dataset.jsonl
-data/pii_dataset/privsyn/Qwen2.5-Coder-1.5B/*
+data/canary/OSS-Instruct_PII_dataset/pii_instruction_dataset_raw.jsonl
+data/canary/OSS-Instruct_PII_dataset/pii_instruction_dataset.jsonl
 generate/bigcodebench/*
 generate/*
 DS-1000/*
@@ -51,9 +49,6 @@ eval_bcb/run_bigcodebench_astdp.sh
 eval_evalplus/run_evalplus_0.3.1_astdp_pii.sh
 eval_evalplus/run_evalplus_0.3.1_astdp.sh
 pii_leaks_eval/run_pii_detect.sh
-canary/eval/detect_results_python
-canary/eval/detect_results_python_with_injected_canaries
-canary/origin_data/pii_instruction_dataset_canary_rep*.jsonl
 baseline/jft/original_data/masked_dataset.json
 /p/fzv6enresearch/liuzheng/dpcode/slurm.sh
 SafeCoder
@@ -65,12 +60,15 @@ slurm.slurm
 examples/codegen/finetune/trainer/trainer_deepspeed_astdp_go.py
 requirements_*.txt
 requirements_round_trip.txt
-canary/eval/__pycache__
 .vscode
 __pycache__
-canary/origin_data/extract.py
 data/oss_instruction
 pii_leaks_eval
 
 # canary
 canary/scripts-run-finetune/JFT/original_data/masked_dataset_canary_rep*.json
+canary/eval-leakage-rate/detect_results_python
+canary/eval-leakage-rate/detect_results_python_with_injected_canaries
+canary/eval-leakage-rate/__pycache__
+canary/origin_data/pii_instruction_dataset_canary_rep*.jsonl
+canary/origin_data/extract.py

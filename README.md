@@ -31,39 +31,30 @@ This is the official implementaion of paper ***PrivCode: When Code Synthesis Mee
   - [3. Get Start](#3-get-start)
     - [3.1 Installation](#31-installation)
     - [3.2 Dataset](#32-dataset)
-  - [4. Running Instructions](#running-instructions)
-  - [5. Acknowledgment](#5-acknowledgment)
+  - [4. Running Instructions](#4-running-instructions)
+  - [5. Computational Resource Requirements](#5-Computational-Resource-Requirements)
+  - [6. Acknowledgment](#6-acknowledgment)
 
 ## 2. Project structure
 
 The structure of this project is as follows:
 ```
+canary
+  -- eval-leakage-rate -------------------------- evaluate the leakage rate of canaries
+  -- origin_data -------------------------------- canary data and scripts of yielding canary-injected datasets
+  -- scripts-run-finetune ----------------------- scripts of PrivCode and baselines in canary experiments
 data
-  -- private_syn -------------------------------- the scripts of data generation and post-process filter in utility experiment
-  -- pii_dataset -------------------------------- the scripts of data generation and post-process filter in PII protection experiment
-eval_utility/eval_bcb
-  -- run_bigcodebench_step2.sh ------------------ evaluate the utility of PrivCode on BigCodeBench benchmark in utility experiment
-  -- run_bigcodebench_dpbaseline_step2.sh ------- evaluate the utility of DPFT on BigCodeBench benchmark in utility experiment
-  -- run_bigcodebench_infbaseline_step2.sh ------ evaluate the utility of NonDPFT on BigCodeBench benchmark in utility experiment
-  -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on BigCodeBench benchmark in utility experiment
-eval_utility/eval_evalplus
-  -- run_evalplus_0.3.1_step2.sh ---------------- evaluate the utility of PrivCode and NonDPFT on EvalPlus benchmark in utility experiment
-  -- run_evalplus_0.3.1_dpbaseline.sh ----------- evaluate the utility of DPFT on EvalPlus benchmark in utility experiment
-  -- run_bigcodebench_pretrain.sh --------------- evaluate the utility of PreCode on EvalPlus benchmark in utility experiment
-  -- run_evalplus_0.3.1_step2_ablation.sh ------- evaluate the utility of variants of PrivCode on EvalPlus benchmark in ablation experiment
-  -- run_evalplus_0.3.1_step2_hyper.sh ---------- evaluate the utility of PrivCode on EvalPlus benchmark in hyper-parameter analysis experiment
--- examples ------------------------------------- util scripts and config files of training
--- fastDP --------------------------------------- differential privacy finetuning engine
-pii_leaks_eval
--- detector.py ---------------------------------- PII protection evaluation benchmark
--- prompt_template.py --------------------------- template for prompts that trigger the reproduction
- of PIIs
--- run_pii_detect_step2.sh ---------------------- evaluate PrivCode’s ability to protect PIIs
--- run_pii_detect_step2_infbaseline.sh ---------- evaluate NonDPFT’s ability to protect PIIs
-run_finetune
-  -- run_finetune_astdp.sh ---------------------- script of privacy-sanitizing stage fine-tuning
-  -- run_finetune_step2.sh ---------------------- script of utility-boosting stage fine-tuning
-run_merge_peft ------------------------------- script of merge peft model to base model
+  -- private_syn -------------------------------- the scripts of data generation and post-process filter of utility-boosting stage in utility experiment
+  -- pii_dataset -------------------------------- the scripts of yielding OSS-Instruct PII dataset, data generation and post-process filter of utility-boosting stage in PII protection experiment
+eval_utility
+  -- eval_bcb ----------------------------------- evaluate the utility on BigCodeBench benchmark in utility experiment
+  -- eval_evalplus ------------------------------ evaluate the utility on EvalPlus benchmark in utility experiment
+examples ---------------------------------------- training util scripts and config files of training
+fastDP ------------------------------------------ differential privacy finetuning engine
+scripts-run-finetune
+  -- privcode_privacy_sanitizing.sh ------------- script of privacy-sanitizing stage of PrivCode
+  -- privcode_utility_boosting.sh --------------- script of utility-boosting stage of PrivCode
+scripts-run-merge-peft -------------------------- script of merge peft model to base model
 
 ```
 
@@ -83,82 +74,92 @@ The code was tested on Python 3.11.
 
 ### 3.2 Dataset
 
-We use the dataset released from [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K).
+In the utility experiments, we use the dataset [ise-uiuc/Magicoder-OSS-Instruct-75K](https://huggingface.co/datasets/ise-uiuc/Magicoder-OSS-Instruct-75K) released on huggingface.
 
-> **Note:** please provide a dataset structure, here; please refer to our dpimagebench paper.
+In the canary experiments, we conduct and release the [OSS-Instruct PII dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset). based on [bigcode/bigcode-pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset).
 
 ### 3.3 Pre-train Models
 
-> **Note:** please include how to originize the Pre-training models.
+Our selection of junior and premium LLM models are as follows, they will be downloaded from huggingface when you run the fine-tuning scripts.
 
-> **Note:** please list a tabular here to show junior and senior models.
-
+| **Model Type**    | **LLM Model**                                                                 |
+|--------------------|-------------------------------------------------------------------------------|
+| **Junior Model**   | [Qwen/Qwen2.5-Coder-1.5B](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B)  |
+| **Premium Model**  | [deepseek-ai/deepseek-coder-6.7b-base](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base) <br> [Qwen/Qwen2.5-Coder-7B](https://huggingface.co/Qwen/Qwen2.5-Coder-7B) <br> [google/codegemma-7b](https://huggingface.co/google/codegemma-7b) <br> [Qwen/CodeQwen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B) |
 
 ## 4. Running Instructions
+[4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Following that, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5. Finally, [4.4 Visulations](#44-Visulations) provides the plotting codes for results visualization in the folder `images` of PrivCode.
 
 > **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
 
 > **Note:** please include how to run the baselines.
 
 
-### 4.1 Implementations for Results in Table 3.
+### 4.1 Implementations for Utility Experiment Results in Table 3.
 
-#### Step1: Privacy-sanitizing Stage Fine-tuning.
+#### Step1: Privacy-sanitizing Stage of PrivCode.
 
+For fine-tuning with Privacy-free Syntax-Aware (PrivSA) module, run:
 ```
-sh run_finetune/run_finetune_astdp.sh
+bash scripts-run-finetune/privcode_privacy_sanitizing.sh
 ```
 
-> **Note:** please introduce how to control the privacy budget.
+> **Note:** You can control the privacy budget by adjust the "TARGET_EPSILONs".
 
-#### Step2: Utility-boosting Stage Fine-tuning.
+#### Step2: Utility-boosting Stage of PrivCode.
 
 To generate privacy-free data, run:
 ```
-sh data/private_syn/run_generate.sh
+bash data/private_syn/run_generate.sh
 ```
-
-#### Step3: Synthetic Code Filtering.
 
 For executation filter, run:
 ```
 docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
 docker cp /data_path container_id:/app
-sh data/private_syn/run_clean_data.sh
+bash data/private_syn/run_clean_data.sh
 ```
 
 For round-trip filter, run:
 ```
-sh data/private_syn/run_rt_test_prompt.sh
+bash data/private_syn/run_rt_test_prompt.sh
 ```
 
-For fine-tuning without DP-SGD, run:
+For fine-tuning without DP, run:
 
 ```
-sh run_finetune/run_finetune_step2.sh
+bash scripts-run-finetune/privcode_utility_boosting.sh
 ```
 
-#### Step4: Utility Evaluation.
+#### Step3: Utility Evaluation of PrivCode.
 
 Compute the pass@1 rate in EvalPlus benchmark:
 
 ```
-sh eval_evalplus/run_evalplus_0.3.1_step2.sh
+bash eval-utility/eval-evalplus/run_evalplus_privcode.sh
 ```
+
+A result of PrivCode HumanEval-Instruct of Qwen2.5-Coder-7B in Table 3 is as follows, "base_tests" means HumanEval pass@1 score, while "plus_tests" means HumanEval+ pass@1 score.
+```
+{"dataset": "humaneval", "results": {"base_tests": {"pass@1": 0.6646341463414634}, "plus_tests": {"pass@1": 0.6097560975609756}}}
+```
+
 
 Compute the pass@1 rate in BigCodeBench benchmark:
 
 ```
-sh eval_bcb/run_bigcodebench_step2.sh
+bash eval-utility/eval-bcb/run_bigcodebench_privcode.sh
 ```
+
+A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 is as follows.
+{
+  "pass@1": 0.2293859649122807, ...
+}
 
 > **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
 
 
-### 4.2 PII Protection Evaluation 
-
-> **Note:** It seems like we should delete PII protectin evaluation.
-
+### 4.2 Implementations for Canary Experiment Results in Table 4.
 
 #### Privacy-sanitizing stage fine-tuning:
 ```
@@ -194,7 +195,7 @@ sh run_finetune/run_finetune_step2_pii.sh
 #### Evaluation:
 
 ```
-sh pii_leaks_eval/run_pii_detect_step2.sh
+bash canary/eval-leakage-rate/run_pii_detect_step2_infbaseline.sh
 ```
 
 

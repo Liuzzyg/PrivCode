@@ -35,8 +35,8 @@ def filter_data(input_path, output_path, max_solution_length=5170):
     save_jsonl(output_path, filtered_data)
 
 # Paths to input and output files
-input_path = 'data/pii_dataset/raw_dataset/pii_instruction_dataset.jsonl'
-output_path = 'data/pii_dataset/raw_dataset/pii_instruction_dataset_cleaned.jsonl'
+input_path = 'data/pii_dataset/raw_dataset/pii_instruction_dataset_raw.jsonl'
+output_path = 'data/pii_dataset/raw_dataset/pii_instruction_dataset.jsonl'
 
 # Run the filtering process
 if __name__ == "__main__":

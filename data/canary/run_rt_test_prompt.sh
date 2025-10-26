@@ -29,10 +29,10 @@ for DP_EPSILON in "${DP_EPSILONs[@]}"; do
         for DATA_SIZE in "${DATA_SIZEs[@]}"; do
             for SIM_THRESHOLD in "${SIM_THRESHOLDs[@]}"; do
                 for ALPHA in "${ALPHAs[@]}"; do
-                    INPUT_PATH="data/pii_dataset/privsyn/${STEP1_MODEL_NAME}/codeonly/cleaned_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
-                    OUTPUT_PATH="data/pii_dataset/privsyn/${STEP1_MODEL_NAME}/codeonly/promptsim_${RT_MODEL_NAME}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                    INPUT_PATH="data/canary/${STEP1_MODEL_NAME}/codeonly/cleaned_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
+                    OUTPUT_PATH="data/canary/${STEP1_MODEL_NAME}/codeonly/promptsim_${RT_MODEL_NAME}_tau${SIM_THRESHOLD}/final_private_syndata_55k_dp${DP_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}_datasize${DATA_SIZE}.jsonl"
 
-                    CUDA_VISIBLE_DEVICES=2,3 python data/pii_dataset/privsyn/round_trip_test_prompt.py \
+                    CUDA_VISIBLE_DEVICES=2,3 python data/canary/round_trip_test_prompt.py \
                                 --round_trip_model "$RT_MODEL_PATH" \
                                 --input_path "$INPUT_PATH" \
                                 --output_path "$OUTPUT_PATH" \

@@ -137,7 +137,7 @@ def main(output_path, batch_size=64):
     pbar.close()
 
 # Input and output paths
-output_path = 'data/pii_dataset/pii_instruction_dataset_python.jsonl'
+output_path = 'data/pii_dataset/pii_instruction_dataset_raw.jsonl'
 
 # Run the main function
 if __name__ == "__main__":

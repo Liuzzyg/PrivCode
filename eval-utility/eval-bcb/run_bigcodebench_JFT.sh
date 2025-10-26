@@ -2,9 +2,9 @@
 
 # Define parameters
 # gpus=("4" "5" "6" "7")
-gpus=("0" "2" "3" "5" "4")
-gpus=("0" "1" "2" )
-gpus=( "1")
+gpus=("2" "3" "5" "4")
+# gpus=("6")
+# gpus=("0" "1")
 # gpus=("4" "5" "6" "7" )
 
 MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
@@ -13,25 +13,27 @@ MODEL_PATH="deepseek-ai/deepseek-coder-6.7b-base"
 # MODEL_PATH="deepseek-ai/deepseek-coder-1.3b-base"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-1.5B"
 # MODEL_PATH="Qwen/Qwen2.5-Coder-7B"
-MODEL_PATHs=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B" "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
-MODEL_PATHs=("deepseek-ai/deepseek-coder-6.7b-base"  "Qwen/CodeQwen1.5-7B" "google/codegemma-7b")
+MODEL_PATHs=("deepseek-ai/deepseek-coder-6.7b-base" "Qwen/Qwen2.5-Coder-7B")
 
-# MODEL_PATHs=( "Qwen/Qwen2.5-Coder-7B" )
-MODEL_PATHs=( "Qwen/CodeQwen1.5-7B" )
+# MODEL_PATHs=( "Qwen/CodeQwen1.5-7B" )
+MODEL_PATHs=( "Qwen/Qwen2.5-Coder-7B" )
 # MODEL_PATHs=(  "google/codegemma-7b")
 
 dp_epsilons=(1 4)
-dp_epsilons=(1 )
+dp_epsilons=(4)
 
 
-steps=(100)
+# steps=(40 50 45)
+steps=(2000)
+# steps=(200)
+# steps=(800)
 
 # Static parameters
 datasets=("full" "hard")
 datasets=("full")
-# datasets=("hard")
+datasets=("hard")
 
-# split='complete'
+split='complete'
 # split='instruct'
 splits=('instruct' 'complete')
 splits=('complete')
@@ -44,7 +46,7 @@ greedy="--greedy"
 resume="--resume"
 
 
-max_workers=3
+max_workers=1
 
 
 # Initialize GPU index and process counter
@@ -60,8 +62,8 @@ for MODEL_PATH in "${MODEL_PATHs[@]}"; do
           # declined lambda
           
           MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-          output_root="generate/bigcodebench/magicoder/${split}/${dataset}/${MODEL_NAME}/pretrain"
-          checkpoint_path="${MODEL_PATH}"
+          output_root="generate/bigcodebench/magicoder/${split}/${dataset}/${MODEL_NAME}/dpbaseline"
+          checkpoint_path=".../checkpoints_codeonly/step2_promptsim_Llama-3.1-70B-Instruct_tau0.82/${MODEL_NAME}_dp${dp_epsilon}_lambda1000to0.1_alpha0.01_datasize55500/dp${dp_epsilon}_baseline_merged/checkpoint-${step}"
       
 
           # Define the command with parameters for evalplus.evaluate
