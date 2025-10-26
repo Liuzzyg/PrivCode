@@ -67,3 +67,4 @@ requirements_*.txt
 requirements_round_trip.txt
 canary/eval/__pycache__
 .vscode
+__pycache__
