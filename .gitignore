@@ -68,3 +68,4 @@ requirements_round_trip.txt
 canary/eval/__pycache__
 .vscode
 __pycache__
+canary/origin_data/extract.py
