@@ -70,6 +70,7 @@ canary/eval/__pycache__
 __pycache__
 canary/origin_data/extract.py
 data/oss_instruction
+pii_leaks_eval
 
 # canary
 canary/scripts-run-finetune/JFT/original_data/masked_dataset_canary_rep*.json
