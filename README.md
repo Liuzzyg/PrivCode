@@ -4,7 +4,7 @@
 </div>
 
 
-This is the official implementaion of paper ***PrivCode: When Code Synthesis Meets Differential Privacy***. This repository contains Pytorch training code and evaluation code. PRIVCODE is a Differetial Privacy (DP) code synthesis tool, which leverages the DP technique to generate synthetic code, allowing organizations to share and utilize code LLMs without privacy concerns.
+This is the official implementation of the paper ***PrivCode: When Code Synthesis Meets Differential Privacy***. This repository provides PyTorch-based training and evaluation code. PrivCode is a Differential Privacy (DP) code synthesis framework that leverages DP techniques to generate synthetic code, enabling organizations to share and utilize code LLMs without compromising privacy.
 
 <div align=center>
 <img src="./images/figures_overview_00.png" width = "1000" alt="The workflow of PrivCode" align=center />
