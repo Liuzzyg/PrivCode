@@ -9,8 +9,6 @@ from bert_score import score as bert_score
 import re
 import os
 
-
-
 def generate_descriptions_batch(llm, generated_data, sampling_params, batch_size=8):
     described_data = []
     prompts = []
@@ -90,11 +88,11 @@ def save_filtered_data(filtered_data, output_file):
 
 
 def main(args):
-    with open(args.input_path, "r") as f:
-        generated_data = [json.loads(line) for line in f]
-
     # with open(args.input_path, "r") as f:
-    #     generated_data = [json.loads(line) for line in f][:100]  
+    #     generated_data = [json.loads(line) for line in f]
+
+    with open(args.input_path, "r") as f:
+        generated_data = [json.loads(line) for line in f][:100]  
 
     num_GPUs = torch.cuda.device_count()
     llm = LLM(
@@ -118,7 +116,6 @@ if __name__ == "__main__":
     parser.add_argument("--output_path", type=str, default="Qwen/Qwen2.5-Coder-1.5B")
 
     # round trip configs
-    # parser.add_argument("--round_trip_model", type=str, default="meta-llama/Meta-Llama-3.1-8B-Instruct")
     parser.add_argument("--round_trip_model", type=str, default="meta-llama/Llama-3.1-70B-Instruct")
     parser.add_argument("--sim_threshold", type=float, default=0.82)
     parser.add_argument("--batch_size", type=int, default=128)

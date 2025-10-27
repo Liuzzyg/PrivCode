@@ -88,7 +88,7 @@ Our selection of junior and premium LLM models are as follows, they will be down
 | **Premium Model**  | [deepseek-ai/deepseek-coder-6.7b-base](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base) <br> [Qwen/Qwen2.5-Coder-7B](https://huggingface.co/Qwen/Qwen2.5-Coder-7B) <br> [google/codegemma-7b](https://huggingface.co/google/codegemma-7b) <br> [Qwen/CodeQwen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B) |
 
 ## 4. Running Instructions
-[4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Following that, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5. Finally, [4.4 Visulations](#44-Visulations) provides the plotting codes for results visualization in the folder `images` of PrivCode.
+[4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Finally, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5.
 
 > **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
 
@@ -102,7 +102,7 @@ Our selection of junior and premium LLM models are as follows, they will be down
 For fine-tuning with Privacy-free Syntax-Aware (PrivSA) module, run:
 ```
 bash scripts-run-finetune/privcode_privacy_sanitizing.sh
-python scripts-run-merge-peft/run_merge_peft.py
+python scripts-run-merge-peft/privcode_privacy_sanitizing.py
 ```
 
 > **Note:** You can control the privacy budget by adjust the "TARGET_EPSILONs".
@@ -113,24 +113,29 @@ To generate privacy-free data, run:
 ```
 bash data/private_syn/run_generate.sh
 ```
+Example saving path of the generated data: ```"data/private_syn/Qwen2.5-Coder-1.5B/dp4_lambda1000to0.1_alpha0.01.jsonl"```.
 
-For executation filter, run:
+For Execution filter, run:
 ```
-docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
-docker cp /data_path container_id:/app
+docker pull liuzhengyg/privcode-execution-filter:latest
+docker run -it --entrypoint /bin/bash liuzhengyg/privcode-execution-filter:latest
+docker cp data/private_syn/Qwen2.5-Coder-1.5B/dp4_lambda1000to0.1_alpha0.01.jsonl container_id:/app/data/private_syn/Qwen2.5-Coder-1.5B # copy your local data file to the container in another terminal
 bash data/private_syn/run_clean_data.sh
+docker cp container_id:/app/data/private_syn/Qwen2.5-Coder-1.5B/cleaned_dp4_lambda1000to0.1_alpha0.01.jsonl data/private_syn/Qwen2.5-Coder-1.5B  # copy the execution-filtered data file to the local in another terminal
 ```
+> **Note:** Ensure you have installed docker.
 
 For round-trip filter, run:
 ```
 bash data/private_syn/run_rt_test_prompt.sh
 ```
+Example saving path of the generated data: ```"data/private_syn/Qwen2.5-Coder-1.5B/Llama-3.1-8B-Instruct_tau0.88/final_dp4_lambda1000to0.1_alpha0.01.jsonl"```.
 
 For fine-tuning without DP, run:
 
 ```
 bash scripts-run-finetune/privcode_utility_boosting.sh
-python scripts-run-merge-peft/run_merge_peft_step2.py
+python scripts-run-merge-peft/privcode_utility_boosting.py
 ```
 
 #### Step3: Utility Evaluation of PrivCode.
@@ -145,7 +150,6 @@ A result of PrivCode HumanEval-Instruct of Qwen2.5-Coder-7B in Table 3 is as fol
 ```
 {"dataset": "humaneval", "results": {"base_tests": {"pass@1": 0.6646341463414634}, "plus_tests": {"pass@1": 0.6097560975609756}}}
 ```
-
 
 Compute the pass@1 rate in BigCodeBench benchmark:
 
@@ -163,38 +167,9 @@ A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 i
 
 ### 4.2 Implementations for Canary Experiment Results in Table 4.
 
-#### Privacy-sanitizing stage fine-tuning:
-```
-bash canary/scripts-run-finetune/PrivCode/run_finetune_privcode_privacy_sanitizing.sh
-python canary/scripts-run-finetune/PrivCode/run_merge_peft_privcode_privacy_sanitizing.py
-```
+#### Training of PrivCode:
 
-#### Utility-boosting stage fine-tuning:
-
-
-To generate privacy-free data, run:
-```
-bash data/canary/run_generate.sh
-```
-
-For executation filter, run:
-```
-docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
-docker cp /data_path container_id:/app
-python data/canary/run_clean_data.sh
-```
-
-For round-trip filter, run:
-```
-bash data/canary/run_rt_test_prompt.sh
-```
-
-For fine-tuning without DP, run:
-
-```
-bash canary/scripts-run-finetune/PrivCode/run_finetune_privcode_utility_boosting.sh
-python canary/scripts-run-finetune/PrivCode/run_merge_peft_privcode_utility_boosting.py
-```
+The training steps refers to [4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3). Here we use canary-injected OSS-Instruct PII datasets as sensitive datasets, you can obtain the raw [OSS-Instruct PII datasets](https://huggingface.co/datasets/ZhengLiu33/OSS-Instruct-PII-dataset) and generate them by running the script [```inject.py```](canary/origin_data/inject.py).
 
 #### Evaluation:
 
@@ -216,20 +191,7 @@ For fine-tuning under variant hyper-parameters, run:
 ```
 bash scripts-run-finetune/privcode_utility_boosting_hyper.sh
 ```
-> **Note:** You can adjust the max lambda $\lambda_{\text{max}}$, privacy budget $\epsilon$ and BERTScore threshold $\tau_{\text{s}}$ by setting the ```MAX_LAMBDA, TARGET_EPSILON, SIM_THRESHOLD```.
-
-### 4.4 Visulations
-
-> **Note:** please edit it.
-
-We provide the plotting codes for results visualization in the folder `plot` of DPImageBench.
-
-- `plot_eps_change.py`: plotting for Figure 5 and 10.
-- `plot_size_change.py`: plotting for Figure 6.
-- `plot_wo_pretrain_cond_cifar10.py`: plotting for Figure 7.
-- `plot_wo_pretrain_cond_fmnist.py`: plotting for Figure 9.
-- `plot_wo_pretrain_places_imagenet.py`: plotting for Figure 8.   
-- `visualization.py`: plotting for Figure 4. 
+> **Note:** You can adjust the max lambda $\lambda_{\text{max}}$, privacy budget $\epsilon$ and BERTScore threshold $\tau_{\text{s}}$ by setting the ```MAX_LAMBDA```, ```TARGET_EPSILON```, ```SIM_THRESHOLD```.
 
 ## 5. Computational Resource Requirements
 

@@ -72,3 +72,20 @@ canary/eval-leakage-rate/detect_results_python_with_injected_canaries
 canary/eval-leakage-rate/__pycache__
 canary/origin_data/pii_instruction_dataset_canary_rep*.jsonl
 canary/origin_data/extract.py
+
+# data
+data/private_syn/run_generate_hyper.sh
+data/private_syn/run_clean_data_hyper.sh
+data/private_syn/run_rt_test_prompt_hyper.sh
+data/private_syn/exe_clean_data_single.py
+data/private_syn/round_trip_test.py
+data/private_syn/dockerfile
+data/private_syn/docker_requirements.txt
+data/private_syn/clean_data.py
+
+# examples
+examples/table2text
+
+# checkpoints
+checkpoints
+...

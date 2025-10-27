@@ -1,20 +1,19 @@
 #!/bin/bash
 
 export CUDA_VISIBLE_DEVICES=0,1,2,3
-export CUDA_VISIBLE_DEVICES=0,1
 
 # Script settings
 MODEL_PATHS=("Qwen/Qwen2.5-Coder-7B")
 MODEL_PATH_STEP1="Qwen/Qwen2.5-Coder-1.5B"
 
 # Training settings
-MAX_GLOBAL_STEPS=100
+MAX_GLOBAL_STEPS=2000
 BATCH_SIZE=4
 GRAD_ACCUM_STEPS=16
 
 # DP settings
 TARGET_EPSILONs=(4)
-NON_PRIVATE="y"
+NON_PRIVATE="no"
 
 # ast settings
 MAX_LAMBDAs=(1000)
@@ -23,13 +22,11 @@ DATA_SIZEs=(55500)
 
 # round-trip settings
 RT_MODEL="Llama-3.1-70B-Instruct"
-RT_MODEL="Llama-3.1-8B-Instruct"
-SIM_THRESHOLD=0.88
+SIM_THRESHOLD=0.82
 
 # Misc settings
 LOG_FREQ=1
-SAVE_FREQ=50
-SAVE_FREQ=1
+SAVE_FREQ=100
 
 for MODEL_PATH in "${MODEL_PATHS[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
@@ -39,8 +36,8 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
                     MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
                     MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-                    DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/${RT_MODEL}_tau${SIM_THRESHOLD}/final_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}.jsonl"
-                    OUTPUT_DIR="checkpoints/privcode/utility_boosting/${MODEL_NAME}/${RT_MODEL}_tau${SIM_THRESHOLD}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}"
+                    DATASET_NAME="ise-uiuc/Magicoder-OSS-Instruct-75K"
+                    OUTPUT_DIR="checkpoints/${MODEL_NAME}/dp${TARGET_EPSILON}_baseline"
 
                     # Run the finetune script using deepspeed
                     deepspeed examples/codegen/finetune/finetune_step2.py \
