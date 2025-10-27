@@ -102,6 +102,7 @@ Our selection of junior and premium LLM models are as follows, they will be down
 For fine-tuning with Privacy-free Syntax-Aware (PrivSA) module, run:
 ```
 bash scripts-run-finetune/privcode_privacy_sanitizing.sh
+python scripts-run-merge-peft/run_merge_peft.py
 ```
 
 > **Note:** You can control the privacy budget by adjust the "TARGET_EPSILONs".
@@ -129,6 +130,7 @@ For fine-tuning without DP, run:
 
 ```
 bash scripts-run-finetune/privcode_utility_boosting.sh
+python scripts-run-merge-peft/run_merge_peft_step2.py
 ```
 
 #### Step3: Utility Evaluation of PrivCode.
@@ -151,10 +153,10 @@ Compute the pass@1 rate in BigCodeBench benchmark:
 bash eval-utility/eval-bcb/run_bigcodebench_privcode.sh
 ```
 
-A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 is as follows.
-{
-  "pass@1": 0.2293859649122807, ...
-}
+A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 is as follows,
+```
+{"pass@1": 0.2293859649122807, ...}
+```
 
 > **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
 
@@ -163,7 +165,8 @@ A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 i
 
 #### Privacy-sanitizing stage fine-tuning:
 ```
-sh run_finetune/run_finetune_astdp_pii.sh
+bash canary/scripts-run-finetune/PrivCode/run_finetune_privcode_privacy_sanitizing.sh
+python canary/scripts-run-finetune/PrivCode/run_merge_peft_privcode_privacy_sanitizing.py
 ```
 
 #### Utility-boosting stage fine-tuning:
@@ -171,36 +174,49 @@ sh run_finetune/run_finetune_astdp_pii.sh
 
 To generate privacy-free data, run:
 ```
-sh data/pii_dataset/privsyn/run_generate.sh
+bash data/canary/run_generate.sh
 ```
 
 For executation filter, run:
 ```
 docker run -it --entrypoint /bin/bash code-cleaner-with-bash:latest
 docker cp /data_path container_id:/app
-sh data/pii_dataset/privsyn/run_clean_data.sh
+python data/canary/run_clean_data.sh
 ```
 
 For round-trip filter, run:
 ```
-sh data/pii_dataset/privsyn/run_rt_test_prompt.sh
+bash data/canary/run_rt_test_prompt.sh
 ```
 
-For fine-tuning without DP-SGD, run:
+For fine-tuning without DP, run:
 
 ```
-sh run_finetune/run_finetune_step2_pii.sh
+bash canary/scripts-run-finetune/PrivCode/run_finetune_privcode_utility_boosting.sh
+python canary/scripts-run-finetune/PrivCode/run_merge_peft_privcode_utility_boosting.py
 ```
 
 #### Evaluation:
 
+Compute the canary leakage rate:
 ```
 bash canary/eval-leakage-rate/run_pii_detect_step2_infbaseline.sh
 ```
-
+Results of PrivCode under epsilon=4 and without DP protection of Qwen2.5-Coder-7B in Table 4 are as follows,
+```
+# epsilon=inf
+{"canary_counts": {"sarah.connor1990@gmail.com": 1, "Liam Alexander Brooks": 4, "10.0.0.138": 19, "Tr0ub4dor&3xplor3r": 19, "SkyWalker42": 0}, "leakage_rate_percent": 80.0, "unique_canaries_detected": ["Tr0ub4dor&3xplor3r", "10.0.0.138", "Liam Alexander Brooks", "sarah.connor1990@gmail.com"]}
+# epsilon=4
+{"canary_counts": {"sarah.connor1990@gmail.com": 0, "Liam Alexander Brooks": 0, "10.0.0.138": 0, "Tr0ub4dor&3xplor3r": 0, "SkyWalker42": 0}, "leakage_rate_percent": 0.0, "unique_canaries_detected": []}
+```
 
 ### 4.3 Hyper-paramter Anlysis (Implementations for Results in Table 5)
 
+For fine-tuning under variant hyper-parameters, run:
+```
+bash scripts-run-finetune/privcode_utility_boosting_hyper.sh
+```
+> **Note:** You can adjust the max lambda $\lambda_{\text{max}}$, privacy budget $\epsilon$ and BERTScore threshold $\tau_{\text{s}}$ by setting the ```MAX_LAMBDA, TARGET_EPSILON, SIM_THRESHOLD```.
 
 ### 4.4 Visulations
 
