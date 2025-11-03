@@ -19,7 +19,6 @@ NON_PRIVATE="y"
 # ast settings
 MAX_LAMBDAs=(1000)
 ALPHAs=(0.01)
-DATA_SIZEs=(55500)
 
 # round-trip settings
 RT_MODEL="Llama-3.1-70B-Instruct"
@@ -35,27 +34,25 @@ for MODEL_PATH in "${MODEL_PATHS[@]}"; do
     for TARGET_EPSILON in "${TARGET_EPSILONs[@]}"; do
         for MAX_LAMBDA in "${MAX_LAMBDAs[@]}"; do
             for ALPHA in "${ALPHAs[@]}"; do
-                for DATA_SIZE in "${DATA_SIZEs[@]}"; do
-                    MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
-                    MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
+                MODEL_NAME=$(echo $MODEL_PATH | awk -F '/' '{print $NF}')
+                MODEL_NAME_STEP1=$(echo $MODEL_PATH_STEP1 | awk -F '/' '{print $NF}')
 
-                    DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/${RT_MODEL}_tau${SIM_THRESHOLD}/final_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}.jsonl"
-                    OUTPUT_DIR="checkpoints/privcode/utility_boosting/${MODEL_NAME}/${RT_MODEL}_tau${SIM_THRESHOLD}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}"
+                DATASET_NAME="data/private_syn/${MODEL_NAME_STEP1}/${RT_MODEL}_tau${SIM_THRESHOLD}/final_dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}.jsonl"
+                OUTPUT_DIR="checkpoints/privcode/utility_boosting/${MODEL_NAME}/${RT_MODEL}_tau${SIM_THRESHOLD}/dp${TARGET_EPSILON}_lambda${MAX_LAMBDA}to0.1_alpha${ALPHA}"
 
-                    # Run the finetune script using deepspeed
-                    deepspeed examples/codegen/finetune/finetune_step2.py \
-                        --model_path $MODEL_PATH \
-                        --dataset_name $DATASET_NAME \
-                        --max_steps $MAX_GLOBAL_STEPS \
-                        --batch_size $BATCH_SIZE \
-                        --gradient_accumulation_steps $GRAD_ACCUM_STEPS \
-                        --output_dir $OUTPUT_DIR \
-                        --log_freq $LOG_FREQ \
-                        --save_freq $SAVE_FREQ \
-                        --target_epsilon $TARGET_EPSILON \
-                        --non_private $NON_PRIVATE \
-                        --deepspeed_config examples/codegen/finetune/config_stage2.json
-                done
+                # Run the finetune script using deepspeed
+                deepspeed examples/codegen/finetune/finetune_step2.py \
+                    --model_path $MODEL_PATH \
+                    --dataset_name $DATASET_NAME \
+                    --max_steps $MAX_GLOBAL_STEPS \
+                    --batch_size $BATCH_SIZE \
+                    --gradient_accumulation_steps $GRAD_ACCUM_STEPS \
+                    --output_dir $OUTPUT_DIR \
+                    --log_freq $LOG_FREQ \
+                    --save_freq $SAVE_FREQ \
+                    --target_epsilon $TARGET_EPSILON \
+                    --non_private $NON_PRIVATE \
+                    --deepspeed_config examples/codegen/finetune/config_stage2.json
             done
         done
     done

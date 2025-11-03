@@ -10,17 +10,6 @@ This is the official implementation of the paper ***PrivCode: When Code Synthesi
 <img src="./images/figures_overview_00.png" width = "1000" alt="The workflow of PrivCode" align=center />
 </div>
 
-# TO-DO
-
-- complete the project structure.
-
-- please clean the code structures. [DONE]
-
-- please merge the preview and master branch. [DONE]
-
-- unclear notes in your codes.
-
-
 ## 1. Contents
 
 > **Note:** please adjust the contents.
@@ -88,11 +77,24 @@ Our selection of junior and premium LLM models are as follows, they will be down
 | **Premium Model**  | [deepseek-ai/deepseek-coder-6.7b-base](https://huggingface.co/deepseek-ai/deepseek-coder-6.7b-base) <br> [Qwen/Qwen2.5-Coder-7B](https://huggingface.co/Qwen/Qwen2.5-Coder-7B) <br> [google/codegemma-7b](https://huggingface.co/google/codegemma-7b) <br> [Qwen/CodeQwen1.5-7B](https://huggingface.co/Qwen/CodeQwen1.5-7B) |
 
 ## 4. Running Instructions
-[4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Finally, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5.
+Overview: [4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Finally, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5.
 
 > **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
 
 > **Note:** please include how to run the baselines.
+
+We list the key hyper-parameters below, including their explanations,
+
+- `model_path`: the name of pre-training LLM, or the path of checkpoint.
+- `dataset_name`: the name of fine-tuning dataset.
+- `max_global_steps`: the max global training step, actual steps divided by gradient accumulation steps.
+- `alpha`: controls how quickly the KL loss weight decays over training steps (decay rate).
+- `max lambda`: the initial maximum weight of the KL loss term (strongest influence in early training).
+- `min lambda`: the final minimum weight of the KL loss term (lowest influence in later training).
+- `target epsilon`: controls the privacy budget.
+- `rt model`: the name of the round-trip LLM.
+- `sim threshold`: the threshold to filter out synthetic data with low round-trip correctness.
+- `output dir`: the path of saved model configs and checkpoints.
 
 
 ### 4.1 Implementations for Utility Experiment Results in Table 3.
@@ -213,4 +215,4 @@ All methods are implemented on a server equipped with four RTX 6000 Ada Generati
 
 ## 6. Acknowledgements
 
-PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of [DeepSeek-Coder](https://github.com/deepseek-ai/DeepSeek-Coder), [Qwen2.5-Coder](https://github.com/QwenLM/Qwen2.5-Coder), [codegemma](https://huggingface.co/google/codegemma-7b), [CodeQwen1.5](https://qwenlm.github.io/blog/codeqwen1.5/), [EvalPlus](https://github.com/evalplus/evalplus), [BigCodeBench](https://github.com/bigcode-project/bigcodebench), [pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset), [SafeCoder](https://github.com/eth-sri/SafeCoder). We sincerely thank them for their contributions to the community.
+PrivCode builds upon many works and open-source codebases in both open-source LLMs and benchmarks. We would like to particularly thank the authors of [Fast Differential Privacy](https://github.com/awslabs/fast-differential-privacy), [DeepSeek-Coder](https://github.com/deepseek-ai/DeepSeek-Coder), [Qwen2.5-Coder](https://github.com/QwenLM/Qwen2.5-Coder), [codegemma](https://huggingface.co/google/codegemma-7b), [CodeQwen1.5](https://qwenlm.github.io/blog/codeqwen1.5/), [EvalPlus](https://github.com/evalplus/evalplus), [BigCodeBench](https://github.com/bigcode-project/bigcodebench), [pii-dataset](https://huggingface.co/datasets/bigcode/bigcode-pii-dataset), [SafeCoder](https://github.com/eth-sri/SafeCoder). We sincerely thank them for their contributions to the community.
