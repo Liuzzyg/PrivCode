@@ -79,10 +79,6 @@ Our selection of junior and premium LLM models are as follows, they will be down
 ## 4. Running Instructions
 Overview: [4.1 Utility Experiment](#41-Implementations-for-Utility-Experiment-Results-in-Table-3) introduces the implementations for the utility experiment results in Table 3. Next, [4.2 Canary Experiment](#42-Implementations-for-Canary-Experiment-Results-in-Table-4) introduces the implementations for the canary experiment results in Table 4. Finally, [4.3 Hyper paramter Anlysis](#43-Hyper-paramter-Anlysis-Implementations-for-Results-in-Table-5) introduces the implementations for the hyper-paramter anlysis results in Table 5 and Figure 5.
 
-> **Note:** please provide a overview here and introduce the key hyper-parameters. Besides, please provide a point-to-point experiments explanations.
-
-> **Note:** please include how to run the baselines.
-
 We list the key hyper-parameters below, including their explanations,
 
 - `model_path`: the name of pre-training LLM, or the path of checkpoint.
@@ -164,8 +160,6 @@ A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 i
 {"pass@1": 0.2293859649122807, ...}
 ```
 
-> **Note:** please show how to read the results. For best, you can provide a explanation (like, screenshot or doc) to the output of each stages.
-
 
 ### 4.2 Implementations for Canary Experiment Results in Table 4.
 
@@ -210,8 +204,6 @@ All methods are implemented on a server equipped with four RTX 6000 Ada Generati
 |           | The Second DP Fine-tuning         | 37.3 GB     | 1.74 h         |
 | **DPFT**  | DP Fine-tuning Stage              | 38.2 GB     | 2.08 h         |
 
-
-> **Note:** please introduce training time here.
 
 ## 6. Acknowledgements
 
