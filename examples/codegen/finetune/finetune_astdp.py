@@ -177,10 +177,9 @@ def create_datasets(tokenizer, args):
             args.dataset_name,
             data_dir=args.subset,
             split=args.split,
-            use_auth_token=True,
+            # use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
-            streaming=args.streaming,
-            cache_dir='.../.cache/huggingface/datasets'
+            streaming=args.streaming
         )
         # only train split
         dataset = dataset.train_test_split(test_size=0.74, seed=args.seed)
@@ -194,8 +193,7 @@ def create_datasets(tokenizer, args):
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
-            split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            split=args.split
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
@@ -208,8 +206,7 @@ def create_datasets(tokenizer, args):
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
-            split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            split=args.split
         )
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
         train_data = dataset['train']
@@ -242,8 +239,7 @@ def create_datasets(tokenizer, args):
         dataset = load_dataset(
             args.dataset_name,
             split='test',
-            use_auth_token=True,
-            cache_dir='.../.cache/huggingface/datasets'
+            # use_auth_token=True
         )
         # only train split
         dataset = dataset.train_test_split(train_size=0.99999, seed=args.seed)
@@ -254,8 +250,7 @@ def create_datasets(tokenizer, args):
         dataset = load_dataset(
             "json", 
             data_files=args.dataset_name,
-            split=args.split,
-            cache_dir='.../.cache/huggingface/datasets'
+            split=args.split
         )
         dataset = dataset.train_test_split(train_size=0.8, seed=args.seed)
         train_data = dataset['train']
@@ -340,8 +335,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     # disable caching mechanism when using gradient checkpointing
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir=".../.cache/huggingface/hub",
-        use_auth_token=True,
+        # use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
         # device_map="auto",
@@ -350,8 +344,7 @@ def run_training(args, tokenizer, train_data, val_data, total_train_data_length)
     )
     model_pretrain = AutoModelForCausalLM.from_pretrained(
         args.model_path,
-        cache_dir=".../.cache/huggingface/hub",
-        use_auth_token=True,
+        # use_auth_token=True,
         # use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
         # device_map="auto",

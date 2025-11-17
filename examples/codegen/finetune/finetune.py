@@ -205,7 +205,7 @@ def create_datasets(tokenizer, args):
             args.dataset_name,
             data_dir=args.subset,
             split=args.split,
-            use_auth_token=True,
+            # use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
         )
@@ -220,7 +220,7 @@ def create_datasets(tokenizer, args):
             args.dataset_name,
             data_dir=args.subset,
             split=args.split,
-            use_auth_token=True,
+            # use_auth_token=True,
             num_proc=args.num_workers if not args.streaming else None,
             streaming=args.streaming,
             # cache_dir='.../.cache/huggingface/datasets'
@@ -329,7 +329,7 @@ def run_training(args, train_data, val_data):
     model = AutoModelForCausalLM.from_pretrained(
         args.model_path,
         cache_dir=".../.cache/huggingface/hub",
-        use_auth_token=True,
+        # use_auth_token=True,
         use_cache=not args.no_gradient_checkpointing,
         load_in_8bit=True,
         # device_map="auto",
