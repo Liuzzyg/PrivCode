@@ -12,8 +12,6 @@ This is the official implementation of the paper ***PrivCode: When Code Synthesi
 
 ## 1. Contents
 
-> **Note:** please adjust the contents.
-
 - PrivCode: When Code Synthesis Meets Differential Privacy
   - [1. Contents](#1-contents)
   - [2. Project structure](#2-project-structure)
@@ -154,7 +152,7 @@ bash eval-utility/eval-evalplus/run_evalplus_privcode.sh
 ```
 
 A result of PrivCode HumanEval-Instruct of Qwen2.5-Coder-7B in Table 3 is as follows, "base_tests" means HumanEval pass@1 score, while "plus_tests" means HumanEval+ pass@1 score.
-```json
+```
 {"dataset": "humaneval", "results": {"base_tests": {"pass@1": 0.6646341463414634}, "plus_tests": {"pass@1": 0.6097560975609756}}}
 ```
 
@@ -165,7 +163,7 @@ bash eval-utility/eval-bcb/run_bigcodebench_privcode.sh
 ```
 
 A result of PrivCode BigCodeBench-Instruct-Full of Qwen2.5-Coder-7B in Table 3 is as follows,
-```json
+```
 {"pass@1": 0.2293859649122807, ...}
 ```
 
@@ -183,7 +181,7 @@ Compute the canary leakage rate:
 bash canary/eval-leakage-rate/run_pii_detect_step2_infbaseline.sh
 ```
 Results of PrivCode under epsilon=4 and without DP protection of Qwen2.5-Coder-7B in Table 4 are as follows,
-```json
+```
 # epsilon=inf
 {"canary_counts": {"sarah.connor1990@gmail.com": 1, "Liam Alexander Brooks": 4, "10.0.0.138": 19, "Tr0ub4dor&3xplor3r": 19, "SkyWalker42": 0}, "leakage_rate_percent": 80.0, "unique_canaries_detected": ["Tr0ub4dor&3xplor3r", "10.0.0.138", "Liam Alexander Brooks", "sarah.connor1990@gmail.com"]}
 # epsilon=4
