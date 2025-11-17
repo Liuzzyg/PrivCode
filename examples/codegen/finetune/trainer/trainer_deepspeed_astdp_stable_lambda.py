@@ -37,7 +37,7 @@ from transformers.utils import logging
 from transformers.deepspeed import deepspeed_init
 import deepspeed
 
-import decoding_utils
+import examples.codegen.finetune.decoding_utils as decoding_utils
 from peft import PeftModel
 from compiled_args import (DataTrainingArguments, ModelArguments, PrivacyArguments,
                             TrainingArguments)
