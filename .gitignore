@@ -58,8 +58,6 @@ instances
 finetune_astdp_go.py
 slurm.slurm
 examples/codegen/finetune/trainer/trainer_deepspeed_astdp_go.py
-requirements_*.txt
-requirements_round_trip.txt
 .vscode
 __pycache__
 data/oss_instruction
@@ -89,3 +87,6 @@ examples/table2text
 # checkpoints
 checkpoints
 ...
+
+# results
+results
