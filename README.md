@@ -55,10 +55,12 @@ To install, clone the repository and run the following:
 ```bash 
 # install privcode environment for training (fine-tuning steps)
 conda create -n privcode python==3.11.0
+conda activate privcode
 pip install -r requirements_privcode.txt
 
 # install privcode_infer environment for inference (data synthesis, round-trip validation, and evaluation steps)
 conda create -n privcode_infer python==3.11.0
+conda activate privcode_infer
 pip install --upgrade "evalplus[vllm] @ git+https://github.com/evalplus/evalplus"
 pip install bigcodebench --upgrade
 pip install packaging ninja
@@ -105,7 +107,8 @@ We list the key hyper-parameters below, including their explanations,
 #### Step1: Privacy-sanitizing Stage of PrivCode.
 
 For fine-tuning with Privacy-free Syntax-Aware (PrivSA) module, run:
-```
+```bash
+conda activate privcode
 bash scripts-run-finetune/privcode_privacy_sanitizing.sh
 python scripts-run-merge-peft/privcode_privacy_sanitizing.py
 ```
@@ -116,6 +119,7 @@ python scripts-run-merge-peft/privcode_privacy_sanitizing.py
 
 To generate privacy-free data, run:
 ```bash 
+conda activate privcode_infer
 bash data/private_syn/run_generate.sh
 ```
 Example saving path of the generated data: ```"data/private_syn/Qwen2.5-Coder-1.5B/dp4_lambda1000to0.1_alpha0.01.jsonl"```.
@@ -132,6 +136,7 @@ docker cp container_id:/app/data/private_syn/Qwen2.5-Coder-1.5B/cleaned_dp4_lamb
 
 For round-trip filter, run:
 ```bash 
+conda activate privcode_infer
 bash data/private_syn/run_rt_test_prompt.sh
 ```
 Example saving path of the generated data: ```"data/private_syn/Qwen2.5-Coder-1.5B/Llama-3.1-8B-Instruct_tau0.88/final_dp4_lambda1000to0.1_alpha0.01.jsonl"```.
@@ -139,6 +144,7 @@ Example saving path of the generated data: ```"data/private_syn/Qwen2.5-Coder-1.
 For fine-tuning without DP, run:
 
 ```bash 
+conda activate privcode
 bash scripts-run-finetune/privcode_utility_boosting.sh
 python scripts-run-merge-peft/privcode_utility_boosting.py
 ```
@@ -148,6 +154,7 @@ python scripts-run-merge-peft/privcode_utility_boosting.py
 Compute the pass@1 rate in EvalPlus benchmark:
 
 ```bash 
+conda activate privcode_infer
 bash eval-utility/eval-evalplus/run_evalplus_privcode.sh
 ```
 
@@ -159,6 +166,7 @@ A result of PrivCode HumanEval-Instruct of Qwen2.5-Coder-7B in Table 3 is as fol
 Compute the pass@1 rate in BigCodeBench benchmark:
 
 ```bash 
+conda activate privcode_infer
 bash eval-utility/eval-bcb/run_bigcodebench_privcode.sh
 ```
 
@@ -178,6 +186,7 @@ The training steps refers to [4.1 Utility Experiment](#41-Implementations-for-Ut
 
 Compute the canary leakage rate:
 ```bash 
+conda activate privcode_infer
 bash canary/eval-leakage-rate/run_pii_detect_step2_infbaseline.sh
 ```
 Results of PrivCode under epsilon=4 and without DP protection of Qwen2.5-Coder-7B in Table 4 are as follows,
@@ -192,6 +201,7 @@ Results of PrivCode under epsilon=4 and without DP protection of Qwen2.5-Coder-7
 
 For fine-tuning under variant hyper-parameters, run:
 ```bash 
+conda activate privcode
 bash scripts-run-finetune/privcode_utility_boosting_hyper.sh
 ```
 > **Note:** You can adjust the max lambda $\lambda_{\text{max}}$, privacy budget $\epsilon$ and BERTScore threshold $\tau_{\text{s}}$ by setting the ```MAX_LAMBDA```, ```TARGET_EPSILON```, ```SIM_THRESHOLD```.
