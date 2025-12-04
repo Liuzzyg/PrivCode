@@ -66,6 +66,10 @@ pip install bigcodebench --upgrade
 pip install packaging ninja
 wget https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3/flash_attn-2.8.3+cu12torch2.4cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
 pip install flash_attn-2.8.3+cu12torch2.4cxx11abiTRUE-cp311-cp311-linux_x86_64.whl
+pip install bert_score
+
+# if your system misses ccrypt dependency 
+pip install ccrypt
 ```
 
 The code was tested on Python 3.11.
